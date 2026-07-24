@@ -29,6 +29,23 @@ app::set_env() {
     path_termux_key_properties="$HOME/.termux/termux.properties"
     path_termux_colors_properties="$HOME/.termux/colors.properties"
     path_termux_font_ttf="$HOME/.termux/font.ttf"
+
+    path_cache_dir="$HOME/.cache/hello-termux"
+    path_cache_theme_list="$path_cache_dir/theme_list"
+    path_cache_font_list="$path_cache_dir/font_list"
+}
+
+app::fetch() {
+    local -n _out="$1"
+    local _cache="$2"
+    local _url="$3"
+
+    if [[ -s $_cache ]]; then
+        _out=$(< "$_cache")
+    else
+        _out=$(curl -#L "$_url") || return 1
+        printf '%s\n' "$_out" > "$_cache"
+    fi
 }
 
 app::set_deps() {
@@ -90,8 +107,12 @@ menu::2::title() {
 menu::3() {
     app::set_deps || return 1
 
+    local theme_list
     printf "$MSG_fetching_theme_list" "$url_ht_theme_text"
-    local theme_list="$(curl -#L "$url_ht_theme_text")"
+    app::fetch theme_list "$path_cache_theme_list" "$url_ht_theme_text" || {
+        printf "$MSG_fetch_failed" "$url_ht_theme_text"
+        return 1
+    }
     [[ -n $theme_list ]] || return 1
     local chosen_theme=$(printf '%s\n' "$theme_list" | fzf --prompt="$MSG_theme_search_prompt")
 
@@ -119,8 +140,12 @@ menu::3b::title() { printf '%b' "${_cat2}${MSG_theme_quick_dracula}${_off}"; }
 menu::4() {
     app::set_deps || return 1
 
+    local font_list
     printf "$MSG_fetching_font_list" "$url_ht_font_text"
-    local font_list=$(curl -#L "$url_ht_font_text")
+    app::fetch font_list "$path_cache_font_list" "$url_ht_font_text" || {
+        printf "$MSG_fetch_failed" "$url_ht_font_text"
+        return 1
+    }
     [[ -n $font_list ]] || return 1
     local chosen=$(printf '%s\n' "$font_list" | fzf --prompt="$MSG_font_search_prompt")
 
@@ -201,6 +226,7 @@ app::i18n_load() {
             MSG_pkg_update="更新和升级软件包"
             MSG_pkg_last_update="上次更新: %s"
             MSG_pkg_no_update="无"
+            MSG_fetch_failed="获取失败: %s\n"
             MSG_fetching_theme_list="拉取主题列表: %s\n"
             MSG_downloading_theme="下载主题 '%s'...\n"
             MSG_applied_theme="应用主题 '%s' 成功。\n"
@@ -237,6 +263,7 @@ app::i18n_load() {
             MSG_pkg_update="Update and upgrade packages"
             MSG_pkg_last_update="Last update: %s"
             MSG_pkg_no_update="None"
+            MSG_fetch_failed="Failed to fetch: %s\n"
             MSG_fetching_theme_list="Fetching theme list: %s\n"
             MSG_downloading_theme="Downloading theme '%s'...\n"
             MSG_applied_theme="Theme '%s' applied successfully.\n"
@@ -270,6 +297,7 @@ case "${_loc:-}" in zh-*) _lang="zh" ;; *) _lang="en" ;; esac
 app::i18n_load
 
 app::set_env cdn.jsdelivr.net
+mkdir -p "$path_cache_dir"
 
 # -- loop menu --
 
