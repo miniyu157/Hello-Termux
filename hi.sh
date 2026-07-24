@@ -197,17 +197,20 @@ menu::s::title() { printf "${_cat4}%s${_faint}（${MSG_repo_current}）${_off}" 
 menu::l() {
     case "$_lang" in
         zh) _lang="en" ;;
-        *)  _lang="zh" ;;
+        *) _lang="zh" ;;
     esac
     app::i18n_load
     MENU_QUICK=1
 }
-menu::l::title() {
-    case "$_lang" in
-        zh) printf "${_cat4}切换语言${_faint}（目前：中文）${_off}" ;;
-        *)  printf "${_cat4}Switch Language${_faint} (Current: English)${_off}" ;;
-    esac
+menu::l::title() { printf '%b' "${_cat4}${MSG_menu_lang_switch}${_off}"; }
+
+menu::cl() {
+    printf '%s\n' "$path_cache_dir"
+    rm -rf "$path_cache_dir"
+    mkdir -p "$path_cache_dir"
+    printf "$MSG_done"
 }
+menu::cl::title() { printf '%b' "${MSG_cache_clear}"; }
 
 menu::q() { exit 0; }
 menu::q::title() { printf '%b' "${MSG_menu_quit}"; }
@@ -248,6 +251,8 @@ app::i18n_load() {
             MSG_fetching_keymap="拉取文件: %s\n"
             MSG_keymap_apply="应用实用按键布局"
             MSG_resource_switch="切换程序资源服务器"
+            MSG_cache_clear="清除缓存"
+            MSG_menu_lang_switch="切换语言（目前：中文）"
             MSG_menu_quit="退出程序"
             MSG_menu_prompt="键入需要的工具回车运行:\n"
             MSG_menu_done=" 工具运行结束，退出码: %s\n"
@@ -285,6 +290,8 @@ app::i18n_load() {
             MSG_fetching_keymap="Fetching file: %s\n"
             MSG_keymap_apply="Apply enhanced key bindings"
             MSG_resource_switch="Switch resource server"
+            MSG_cache_clear="Clear cache"
+            MSG_menu_lang_switch="Switch Language (Current: English)"
             MSG_menu_quit="Exit"
             MSG_menu_prompt="Type a key and press Enter to run:\n"
             MSG_menu_done=" Tool finished, exit code: %s\n"
@@ -297,7 +304,7 @@ app::i18n_load() {
 
 declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[1;38;2;255;115;108m' _cat2=$'\e[1;38;2;121;167;252m' _cat3=$'\e[1;38;2;255;174;193m' _cat4=$'\e[1;38;2;255;226;2m'
 
-_loc=$(getprop persist.sys.locale 2>/dev/null) || true
+_loc=$(getprop persist.sys.locale 2> /dev/null) || true
 case "${_loc:-}" in zh-*) _lang="zh" ;; *) _lang="en" ;; esac
 app::i18n_load
 
@@ -313,13 +320,13 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-    menu_keys=(1 1a 2 3 3a 3b 4 4a 4b k l s q)
-    for _id in "${menu_keys[@]}"; do
-        if compgen -A function -- "menu::${_id}::title" > /dev/null; then
-            printf "${_faint}${_italic}%3s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
-        fi
-    done
-)
+        menu_keys=(1 1a 2 3 3a 3b 4 4a 4b k l s cl q)
+        for _id in "${menu_keys[@]}"; do
+            if compgen -A function -- "menu::${_id}::title" > /dev/null; then
+                printf "${_faint}${_italic}%3s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
+            fi
+        done
+    )
 ${_faint}─────────────────────────────────────────────────${_off}
 EOF
     printf "$MSG_menu_prompt"
@@ -332,7 +339,7 @@ EOF
     history -s -- "$choice"
     MENU_QUICK=0
     "menu::${choice}"
-    (( MENU_QUICK )) || {
+    ((MENU_QUICK)) || {
         printf "${_ok}>${_off}${MSG_menu_done}" "$?"
         printf "$MSG_menu_continue"
         read -r _ < /dev/tty
