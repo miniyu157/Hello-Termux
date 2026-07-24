@@ -266,7 +266,7 @@ app::i18n_load() {
             MSG_done="设置完成。\n"
             MSG_install_exists="hi 已经安装到本地。\n"
             MSG_install_done="安装完成。使用 hi 启动。\n使用 hi-uninstall 卸载。\n"
-            MSG_MENU_repo_quick_china="快捷设置 Chinese 源"
+            MSG_MENU_repo_quick_china="快捷设置中国大陆软件源"
             MSG_MENU_pkg_update="更新和升级软件包"
             MSG_MENU_pkg_last_update="上次更新: %s"
             MSG_MENU_pkg_no_update="无"
