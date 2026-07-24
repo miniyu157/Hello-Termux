@@ -188,7 +188,7 @@ $(
 ${_faint}─────────────────────────────────────────────────${_off}
 EOF
     printf "键入需要的工具回车运行\n"
-    read -e -r choice || {
+    read -e -r choice < /dev/tty || {
         printf "\n"
         exit 0
     }
@@ -200,6 +200,6 @@ EOF
     (( MENU_QUICK )) || {
         printf "${_ok}>${_off} 工具运行结束，退出码: %s\n" "$?"
         printf "  按回车键继续..."
-        read -r _
+        read -r _ < /dev/tty
     }
 done
