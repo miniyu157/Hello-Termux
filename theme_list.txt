@@ -1,0 +1,591 @@
+0x96f
+12-bit Rainbow
+3024 Day
+3024 Night
+Aardvark Blue
+Aardvark Ink
+Abernathy
+Acid Lime
+Adventure Time
+Adventure
+Adwaita Dark
+Adwaita
+Afterglow
+Aizen Dark
+Aizen Light
+Alabaster
+Alien Blood
+Amber CRT Retro
+Andromeda
+Apple Classic
+Apple System Colors Light
+Apple System Colors
+Arcoiris
+Ardoise
+Argonaut
+Arthur
+Atelier Sulphurpool
+Atlas Ragnarok
+Atom One Dark
+Atom One Light
+Atom
+Aubade
+Aura Dark
+Aura
+Aurora
+Ayu Light
+Ayu Mirage
+Ayu
+Banana Blueberry
+Batman
+Belafonte Day
+Belafonte Night
+Birds Of Paradise
+Black Metal (Bathory)
+Black Metal (Burzum)
+Black Metal (Dark Funeral)
+Black Metal (Gorgoroth)
+Black Metal (Immortal)
+Black Metal (Khold)
+Black Metal (Marduk)
+Black Metal (Mayhem)
+Black Metal (Nile)
+Black Metal (Venom)
+Black Metal
+Blazer
+Blue Berry Pie
+Blue Dolphin
+Blue Matrix
+Bluloco Dark
+Bluloco Light
+Borland
+Box
+Breadog
+Breeze
+Bright Lights
+Broadcast
+Brogrammer
+Builtin Dark
+Builtin Light
+Builtin Pastel Dark
+Builtin Tango Dark
+Builtin Tango Light
+C64
+CGA
+CLRS
+Calamity
+Carbonfox
+Catppuccin Frappe
+Catppuccin Latte
+Catppuccin Macchiato
+Catppuccin Mocha
+Chalk
+Chalkboard
+Challenger Deep
+Chester
+Ciapre
+Citrus Ink
+Citruszest
+Claude Dark
+Claude Light
+Claude
+Clear Dark
+Clear Light
+Cobalt Neon
+Cobalt Next Dark
+Cobalt Next Minimal
+Cobalt Next
+Cobalt2
+Coffee Theme
+Cool Night
+Crayon Pony Fish
+Cursor Dark
+Cursor Light
+Cutie Pro
+Cyberdyne
+Cyberpunk Scarlet Protocol
+Cyberpunk
+Dalton Dark
+Dark Modern
+Dark Pastel
+Dark+
+Darkermatrix
+Darkmatrix
+Darkside
+Dawnfox
+Daybreak
+Dayfox
+Deep
+Desert
+Detuned
+Dimidium
+Dimmed Monokai
+Django Reborn Again
+Django Smooth
+Django
+Dogxi Misty
+Doom One
+Doom Peacock
+Dot Gov
+Dracula+
+Dracula
+Driftwood
+Duckbones
+Duotone Dark
+Duskfox
+ENCOM
+Earthsong
+Eclipse
+Electron Highlighter Day
+Electron Highlighter
+Elegant
+Elemental
+Elementary
+Embark
+Embers Dark
+Emerald Synth
+Espresso Libre
+Espresso
+Everblush
+Everforest Dark Hard
+Everforest Dark Med
+Everforest Dark Soft
+Everforest Light Hard
+Everforest Light Med
+Everforest Light Soft
+Fahrenheit
+Fairyfloss
+Farmhouse Dark
+Farmhouse Light
+Fideloper
+Firefly Traditional
+Firefox Dev
+Firewatch
+Fish Tank
+Flat
+Flatland
+Flexoki Dark
+Flexoki Light
+Floraverse
+Forest Blue
+Forge Ember
+Framer
+Front End Delight
+Frostbyte
+Fun Forrest
+Galaxy
+Galizur
+Ghostty Default Style Dark
+GitHub Dark Colorblind
+GitHub Dark Default
+GitHub Dark Dimmed
+GitHub Dark High Contrast
+GitHub Dark
+GitHub Light Colorblind
+GitHub Light Default
+GitHub Light High Contrast
+GitHub
+GitLab Dark Grey
+GitLab Dark
+GitLab Light
+Glacier
+Gleam Classic
+Gleam
+Grape
+Graphite
+Grass
+Green Phosphor CRT
+Grey Green
+Gruber Darker
+Gruvbox Dark Hard
+Gruvbox Dark
+Gruvbox Light Hard
+Gruvbox Light
+Gruvbox Material Dark
+Gruvbox Material Light
+Gruvbox Material
+Guezwhoz
+HaX0R Blue
+HaX0R Gr33N
+HaX0R R3D
+Hacktober
+Hardcore
+Harper
+Havn Daggry
+Havn Skumring
+Heeler
+Highway
+Hipster Green
+Hivacruz
+Homebrew
+Hopscotch.256
+Hopscotch
+Horizon Bright
+Horizon
+Hot Dog Stand (Mustard)
+Hot Dog Stand
+Hurtado
+Hybrid
+IBM 5153 CGA (Black)
+IBM 5153 CGA
+IC Green PPL
+IC Orange PPL
+IR Black
+IRIX Console
+IRIX Terminal
+Iceberg Dark
+Iceberg Light
+Idea
+Idle Toes
+Jackie Brown
+Japanesque
+Jellybeans
+JetBrains Darcula
+JetBrains Islands Dark
+JetCalm Light
+Jubi
+Kanagawa Dragon
+Kanagawa Lotus
+Kanagawa Wave
+Kanagawabones
+Kanso Ink
+Kanso Mist
+Kanso Pearl
+Kanso Zen
+Karasu Night
+Karasu Snow
+Karma Dark Dimmed
+Karma Dark HC
+Karma Dark
+Karma Light Dimmed
+Karma Light HC
+Karma Light
+Keys Ocean Sunset HC
+Keys Ocean Sunset
+Kibble
+Kitty Default
+Kitty Low Contrast
+Klein Void
+Kolorit
+Konsolas
+Kurokula
+Lab Fox
+Laser
+Later This Evening
+Lavandula
+Letterpress
+Light Owl
+Liquid Carbon Transparent
+Liquid Carbon
+London Bonfire Night
+London Columbia Road
+London Embankment Dusk
+London Soho Night
+Lovelace
+Man Page
+Mariana
+Matcha Zen
+Material Dark
+Material Darker
+Material Design Colors
+Material Ocean
+Material
+Mathias
+Matrix
+Matte Black
+Medallion
+Melange Dark
+Melange Light
+Mellifluous
+Mellow
+Mesila One
+Miami Heat
+Miasma
+Midnight In Mojave
+Mirage
+Misterioso
+Modus Operandi Deuteranopia
+Modus Operandi Tinted
+Modus Operandi Tritanopia
+Modus Operandi
+Modus Vivendi Deuteranopia
+Modus Vivendi Tinted
+Modus Vivendi Tritanopia
+Modus Vivendi
+Molokai
+Mona Lisa
+Monokai Classic
+Monokai Pro Light Sun
+Monokai Pro Light
+Monokai Pro Machine
+Monokai Pro Octagon
+Monokai Pro Ristretto
+Monokai Pro Spectrum
+Monokai Pro
+Monokai Remastered
+Monokai Soda
+Monokai SublimeText
+Monokai Vivid
+Monospace Dark
+Monospace Light
+Moonfly
+Moonwalk
+N0Tch2K
+Nebula Drift
+Neobones Dark
+Neobones Light
+Neon Purple
+Neon
+Neopolitan
+Neutron
+Night Lion V1
+Night Lion V2
+Night Owl
+Night Owlish Light
+Nightfox
+Niji
+No Clown Fiesta Light
+No Clown Fiesta
+Noctis Azureus
+Noctis Bordo
+Noctis Hibernus
+Noctis Lilac
+Noctis Lux
+Noctis Minimus
+Noctis Obscuro
+Noctis Sereno
+Noctis Uva
+Noctis Viola
+Noctis
+Nocturnal Winter
+Nord Light
+Nord Wave
+Nord
+Nordfox
+Novel
+Nvim Dark
+Nvim Light
+Obsidian
+Ocean
+Oceanic Material
+Oceanic Next
+Ollie
+One Dark Two
+One Double Dark
+One Double Light
+One Half Dark
+One Half Light
+Onenord Light
+Onenord
+Opaline
+Operator Mono Dark
+Overnight Slumber
+Oxblood
+Oxide
+Oxocarbon
+Pale Night Hc
+Pandora
+Paraiso Dark
+Patina Dark Soft
+Patina Dark
+Patina Lichen
+Patina Light
+Patina Moss
+Patina Stellar
+Patina
+Paul Millr
+Pencil Dark
+Pencil Light
+Peppermint
+Phala Green Dark
+Piatto Light
+Pierre Dark
+Pierre Light
+Pnevma
+Poimandres Darker
+Poimandres Storm
+Poimandres White
+Poimandres
+Popping And Locking
+Porcelain
+Powershell
+Primary
+Prism
+Pro Light
+Pro
+Purple Rain
+Purplepeter
+Pyrokai Light
+Pyrokai
+Rapture
+Raycast Dark
+Raycast Light
+Rebecca
+Red Alert
+Red Planet
+Red Sands
+Relaxed
+Retro Legends
+Retro
+Rippedcasts
+Rose Pine Dawn
+Rose Pine Moon
+Rose Pine
+Rouge 2
+Royal
+Ryuuko
+Sakura
+Sandstone Classic
+Sandstone Ink
+Sandstone Warm
+Sauber
+Scarlet Protocol
+Sea Shells
+Seafoam Pastel
+SeedFlip Abyss
+SeedFlip Amethyst
+SeedFlip Canopy
+SeedFlip Carbon
+SeedFlip Coral
+SeedFlip Ember
+SeedFlip Glacier
+SeedFlip Inkwell
+SeedFlip Ivory
+SeedFlip Nightfall
+SeedFlip Phosphor
+SeedFlip Pulse
+SeedFlip Ultraviolet
+SeedFlip Voltage
+SeedFlip Wavelength
+Selenized Black
+Selenized Dark
+Selenized Light
+Seoulbones Dark
+Seoulbones Light
+Sequoia Monochrome Dark
+Sequoia Monochrome Light
+Sequoia Moonlight Dark
+Sequoia Moonlight Light
+Sequoia Retro Dark
+Sequoia Retro Light
+Serendipity Midnight
+Serendipity Morning
+Serendipity Sunset
+Seti
+Shades Of Purple
+Shaman
+Shokunin
+Slate
+Sleepy Hollow
+Smyck
+Snazzy Soft
+Snazzy
+Soft Server
+Solarized Darcula
+Solarized Dark Higher Contrast
+Solarized Dark Patched
+Solarized Osaka Night
+Sonokai
+Spacedust
+Spacegray Bright
+Spacegray Eighties Dull
+Spacegray Eighties
+Spacegray
+Spiderman
+Spring
+Square
+Squintless
+Squirrelsong Dark
+Srcery
+Starlight
+Sublette
+Subliminal
+Sugarplum
+Sumi Linen
+Sumi Phosphor
+Sundried
+Sunset Drive
+Symfonic
+Synthwave Alpha
+Synthwave Everything
+Synthwave
+Tango Adapted
+Tango Half Adapted
+Tearout
+Teerb
+Terafox
+Terminal Basic Dark
+Terminal Basic
+Thayer Bright
+The Hulk
+Tinacious Design Dark
+Tinacious Design Light
+Token Dark
+Token Light
+TokyoNight Day
+TokyoNight Moon
+TokyoNight Night
+TokyoNight Storm
+TokyoNight
+Tomorrow Night Blue
+Tomorrow Night Bright
+Tomorrow Night Burns
+Tomorrow Night Eighties
+Tomorrow Night
+Tomorrow
+Toy Chest
+Trapped in Amber
+Treehouse
+Twilight
+Ubuntu
+Ultra Dark
+Ultra Violent
+Under The Sea
+Unikitty
+Urple
+Vague
+Vaughn
+Velvet Court
+Vercel
+Verdigris
+Vesper
+Vibrant Ink
+Vimbones
+Violet Dark
+Violet Light
+Violite
+Warm Neon
+Wez
+Whimsy
+Wild Cherry
+Wilmersdorf
+Wombat
+Wryan
+Xcode Dark hc
+Xcode Dark
+Xcode Light hc
+Xcode Light
+Xcode WWDC
+Zenbones Dark
+Zenbones Light
+Zenbones
+Zenburn
+Zenburned
+Zenwritten Dark
+Zenwritten Light
+base16-icy
+branch
+cyberpunk-icy
+iTerm2 Dark Background
+iTerm2 Default
+iTerm2 Light Background
+iTerm2 Pastel Dark Background
+iTerm2 Smoooooth
+iTerm2 Solarized Dark
+iTerm2 Solarized Light
+iTerm2 Tango Dark
+iTerm2 Tango Light
+novmbr
+owl
+traffic
+urban
