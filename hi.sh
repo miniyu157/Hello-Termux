@@ -177,7 +177,7 @@ menu::k() {
         printf "$MSG_done"
     }
 }
-menu::k::title() { printf '%b' "${_cat4}${MSG_keymap_apply}${_faint}（miniyu157/hello-termux）${_off}"; }
+menu::k::title() { printf '%b' "${_cat4}${MSG_keymap_apply}${_faint}（miniyu157/Hello-Termux）${_off}"; }
 
 menu::s() {
     [[ $app_resource_service != "github.com" ]] && {
@@ -210,7 +210,7 @@ menu::l::title() {
 }
 
 menu::q() { exit 0; }
-menu::q::title() { printf '%b' "${_cat4}${MSG_menu_quit}${_off}"; }
+menu::q::title() { printf '%b' "${MSG_menu_quit}"; }
 
 # -- i18n --
 
@@ -249,7 +249,7 @@ app::i18n_load() {
             MSG_keymap_apply="应用实用按键布局"
             MSG_resource_switch="切换程序资源服务器"
             MSG_menu_quit="退出程序"
-            MSG_menu_prompt="键入需要的工具回车运行\n"
+            MSG_menu_prompt="键入需要的工具回车运行:\n"
             MSG_menu_done=" 工具运行结束，退出码: %s\n"
             MSG_menu_continue="  按回车键继续..."
             ;;
@@ -286,7 +286,7 @@ app::i18n_load() {
             MSG_keymap_apply="Apply enhanced key bindings"
             MSG_resource_switch="Switch resource server"
             MSG_menu_quit="Exit"
-            MSG_menu_prompt="Type a key and press Enter to run\n"
+            MSG_menu_prompt="Type a key and press Enter to run:\n"
             MSG_menu_done=" Tool finished, exit code: %s\n"
             MSG_menu_continue="  Press Enter to continue..."
             ;;
