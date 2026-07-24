@@ -13,6 +13,7 @@ app::set_env() {
             url_iterm2_color_schemes_prefix="https://cdn.jsdelivr.net/gh/mbadolato/iTerm2-Color-Schemes@master/termux"
             url_ht_font_text="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/font_list.txt"
             url_nerd_fonts_download_prefix="https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@master/patched-fonts"
+            url_ht_self="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/hi.sh"
             ;;
         github.com)
             app_resource_service="github.com"
@@ -22,6 +23,7 @@ app::set_env() {
             url_iterm2_color_schemes_prefix="https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/master/termux"
             url_ht_font_text="https://github.com/miniyu157/hello-termux/raw/main/font_list.txt"
             url_nerd_fonts_download_prefix="https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts"
+            url_ht_self="https://github.com/miniyu157/hello-termux/raw/main/hi.sh"
             ;;
     esac
 
@@ -33,6 +35,9 @@ app::set_env() {
     path_cache_dir="$HOME/.cache/hello-termux"
     path_cache_theme_list="$path_cache_dir/theme_list"
     path_cache_font_list="$path_cache_dir/font_list"
+
+    path_ht_install_bin="$PREFIX/bin/hi"
+    path_ht_uninstall_bin="$PREFIX/bin/hi-uninstall"
 }
 
 app::fetch() {
@@ -202,6 +207,27 @@ menu::s() {
 }
 menu::s::title() { printf "${_cat4}%s${_faint}（${MSG_MENU_repo_current}）${_off}" "$MSG_MENU_resource_switch" "$app_resource_service"; }
 
+menu::i() {
+    if [[ -f $path_ht_install_bin ]]; then
+        printf "$MSG_install_exists"
+        return 1
+    fi
+    printf "$MSG_fetching_keymap" "$url_ht_self"
+    curl -#L "$url_ht_self" -o "$path_ht_install_bin" || {
+        printf "$MSG_fetch_failed" "$url_ht_self"
+        return 1
+    }
+    chmod +x "$path_ht_install_bin"
+    cat > "$path_ht_uninstall_bin" << EOF
+#!/usr/bin/env bash
+rm -f "$path_ht_install_bin" "$path_ht_uninstall_bin"
+printf 'hi has been uninstalled.\n'
+EOF
+    chmod +x "$path_ht_uninstall_bin"
+    printf "$MSG_install_done"
+}
+menu::i::title() { printf '%b' "${MSG_MENU_install}"; }
+
 menu::l() {
     case "$_lang" in
         zh) _lang="en" ;;
@@ -238,6 +264,8 @@ app::i18n_load() {
             MSG_MENU_repo_current="目前: %s"
             MSG_MENU_repo_none="未设置任何源"
             MSG_done="设置完成。\n"
+            MSG_install_exists="hi 已经安装到本地。\n"
+            MSG_install_done="安装完成。使用 hi 启动。\n使用 hi-uninstall 卸载。\n"
             MSG_MENU_repo_quick_china="快捷设置 Chinese 源"
             MSG_MENU_pkg_update="更新和升级软件包"
             MSG_MENU_pkg_last_update="上次更新: %s"
@@ -259,7 +287,8 @@ app::i18n_load() {
             MSG_fetching_keymap="拉取文件: %s\n"
             MSG_MENU_keymap_apply="应用实用按键布局"
             MSG_MENU_resource_switch="切换程序资源服务器"
-            MSG_MENU_cache_clear="清除缓存"
+            MSG_MENU_install="将此程序安装到本地"
+            MSG_MENU_cache_clear="清除下载缓存"
             MSG_MENU_lang_switch="切换语言（目前：中文）"
             MSG_MENU_quit="退出程序"
             MSG_menu_prompt="键入需要的工具回车运行:\n"
@@ -277,6 +306,8 @@ app::i18n_load() {
             MSG_MENU_repo_current="Current: %s"
             MSG_MENU_repo_none="No mirror set"
             MSG_done="Done.\n"
+            MSG_install_exists="hi is already installed.\n"
+            MSG_install_done="Done. Run 'hi' to start.\nRun 'hi-uninstall' to uninstall.\n"
             MSG_MENU_repo_quick_china="Quick-set Chinese mainland mirror"
             MSG_MENU_pkg_update="Update and upgrade packages"
             MSG_MENU_pkg_last_update="Last update: %s"
@@ -298,7 +329,8 @@ app::i18n_load() {
             MSG_fetching_keymap="Fetching file: %s\n"
             MSG_MENU_keymap_apply="Apply enhanced key bindings"
             MSG_MENU_resource_switch="Switch resource server"
-            MSG_MENU_cache_clear="Clear cache"
+            MSG_MENU_install="Install this program locally"
+            MSG_MENU_cache_clear="Clear download cache"
             MSG_MENU_lang_switch="Switch Language (Current: English)"
             MSG_MENU_quit="Exit"
             MSG_menu_prompt="Type a key and press Enter to run:\n"
@@ -328,7 +360,7 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(1 1a 2 3 3a 3b 4 4a 4b k l s cl q)
+        menu_keys=(1 1a 2 3 3a 3b 4 4a 4b k l s i cl q)
         for _id in "${menu_keys[@]}"; do
             if compgen -A function -- "menu::${_id}::title" > /dev/null; then
                 printf "${_faint}${_italic}%3s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
