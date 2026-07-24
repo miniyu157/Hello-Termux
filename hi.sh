@@ -48,6 +48,11 @@ app::fetch() {
     fi
 }
 
+app::backup_file() {
+    local _path="$1"
+    [[ -f $_path ]] && cp "$_path" "${_path}.$(date +%Y%m%d%H%M%S).bak"
+}
+
 app::set_deps() {
     declare -ag DEPS=(fzf)
     local missing=$(
@@ -67,7 +72,7 @@ app::set_deps() {
 termux::apply_nerd_font() {
     local font_suffix="$1"
     printf "$MSG_font_downloading" "$font_suffix"
-    [[ -f $path_termux_font_ttf ]] && cp "$path_termux_font_ttf" "${path_termux_font_ttf}.bak"
+    app::backup_file "$path_termux_font_ttf"
     curl -#L "${url_nerd_fonts_download_prefix}/${font_suffix}" -o "$path_termux_font_ttf" && {
         termux-reload-settings
         printf "$MSG_font_applied" "$font_suffix"
@@ -119,7 +124,7 @@ menu::3() {
     [[ -n $chosen_theme ]] || return 1
     printf "$MSG_downloading_theme" "$chosen_theme"
     local raw_url="$url_iterm2_color_schemes_prefix/${chosen_theme// /%20}.properties"
-    [[ -f $path_termux_colors_properties ]] && cp "$path_termux_colors_properties" "${path_termux_colors_properties}.bak"
+    app::backup_file "$path_termux_colors_properties"
     curl -#L "$raw_url" -o "$path_termux_colors_properties" && {
         termux-reload-settings
         printf "$MSG_applied_theme" "$chosen_theme"
@@ -131,7 +136,7 @@ menu::3a() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes
 menu::3a::title() { printf '%b' "${_cat2}${MSG_theme_browse_browser}${_off}"; }
 
 menu::3b() {
-    [[ -f $path_termux_colors_properties ]] && cp "$path_termux_colors_properties" "${path_termux_colors_properties}.bak"
+    app::backup_file "$path_termux_colors_properties"
     base64 -d <<< 'IyBEcmFjdWxhKwpmb3JlZ3JvdW5kPSNmOGY4ZjIKYmFja2dyb3VuZD0jMjEyMTIxCmN1cnNvcj0jZWNlZmY0Cgpjb2xvcjA9IzIxMjIyYwpjb2xvcjE9I2ZmNTU1NQpjb2xvcjI9IzUwZmE3Ygpjb2xvcjM9I2ZmY2I2Ygpjb2xvcjQ9IzgyYWFmZgpjb2xvcjU9I2M3OTJlYQpjb2xvcjY9IzhiZTlmZApjb2xvcjc9I2Y4ZjhmMgoKY29sb3I4PSM1NDU0NTQKY29sb3I5PSNmZjZlNmUKY29sb3IxMD0jNjlmZjk0CmNvbG9yMTE9I2ZmY2I2Ygpjb2xvcjEyPSNkNmFjZmYKY29sb3IxMz0jZmY5MmRmCmNvbG9yMTQ9I2E0ZmZmZgpjb2xvcjE1PSNmOGY4ZjIK' > "$path_termux_colors_properties"
     termux-reload-settings
 }
@@ -165,7 +170,7 @@ menu::4b() { termux::apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.tt
 menu::4b::title() { printf '%b' "${_cat3}${MSG_font_quick_iosevka}${_off}"; }
 
 menu::k() {
-    [[ -f $path_termux_key_properties ]] && cp "$path_termux_key_properties" "${path_termux_key_properties}.bak"
+    app::backup_file "$path_termux_key_properties"
     printf "$MSG_fetching_keymap" "$url_ht_properties"
     curl -#L "$url_ht_properties" -o "$path_termux_key_properties" && {
         termux-reload-settings
