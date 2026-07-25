@@ -1,591 +1,591 @@
-0x96f
-12-bit Rainbow
-3024 Day
-3024 Night
-Aardvark Blue
-Aardvark Ink
-Abernathy
-Acid Lime
-Adventure Time
-Adventure
-Adwaita Dark
-Adwaita
-Afterglow
-Aizen Dark
-Aizen Light
-Alabaster
-Alien Blood
-Amber CRT Retro
-Andromeda
-Apple Classic
-Apple System Colors Light
-Apple System Colors
-Arcoiris
-Ardoise
-Argonaut
-Arthur
-Atelier Sulphurpool
-Atlas Ragnarok
-Atom One Dark
-Atom One Light
-Atom
-Aubade
-Aura Dark
-Aura
-Aurora
-Ayu Light
-Ayu Mirage
-Ayu
-Banana Blueberry
-Batman
-Belafonte Day
-Belafonte Night
-Birds Of Paradise
-Black Metal (Bathory)
-Black Metal (Burzum)
-Black Metal (Dark Funeral)
-Black Metal (Gorgoroth)
-Black Metal (Immortal)
-Black Metal (Khold)
-Black Metal (Marduk)
-Black Metal (Mayhem)
-Black Metal (Nile)
-Black Metal (Venom)
-Black Metal
-Blazer
-Blue Berry Pie
-Blue Dolphin
-Blue Matrix
-Bluloco Dark
-Bluloco Light
-Borland
-Box
-Breadog
-Breeze
-Bright Lights
-Broadcast
-Brogrammer
-Builtin Dark
-Builtin Light
-Builtin Pastel Dark
-Builtin Tango Dark
-Builtin Tango Light
-C64
-CGA
-CLRS
-Calamity
-Carbonfox
-Catppuccin Frappe
-Catppuccin Latte
-Catppuccin Macchiato
-Catppuccin Mocha
-Chalk
-Chalkboard
-Challenger Deep
-Chester
-Ciapre
-Citrus Ink
-Citruszest
-Claude Dark
-Claude Light
-Claude
-Clear Dark
-Clear Light
-Cobalt Neon
-Cobalt Next Dark
-Cobalt Next Minimal
-Cobalt Next
-Cobalt2
-Coffee Theme
-Cool Night
-Crayon Pony Fish
-Cursor Dark
-Cursor Light
-Cutie Pro
-Cyberdyne
-Cyberpunk Scarlet Protocol
-Cyberpunk
-Dalton Dark
-Dark Modern
-Dark Pastel
-Dark+
-Darkermatrix
-Darkmatrix
-Darkside
-Dawnfox
-Daybreak
-Dayfox
-Deep
-Desert
-Detuned
-Dimidium
-Dimmed Monokai
-Django Reborn Again
-Django Smooth
-Django
-Dogxi Misty
-Doom One
-Doom Peacock
-Dot Gov
-Dracula+
-Dracula
-Driftwood
-Duckbones
-Duotone Dark
-Duskfox
-ENCOM
-Earthsong
-Eclipse
-Electron Highlighter Day
-Electron Highlighter
-Elegant
-Elemental
-Elementary
-Embark
-Embers Dark
-Emerald Synth
-Espresso Libre
-Espresso
-Everblush
-Everforest Dark Hard
-Everforest Dark Med
-Everforest Dark Soft
-Everforest Light Hard
-Everforest Light Med
-Everforest Light Soft
-Fahrenheit
-Fairyfloss
-Farmhouse Dark
-Farmhouse Light
-Fideloper
-Firefly Traditional
-Firefox Dev
-Firewatch
-Fish Tank
-Flat
-Flatland
-Flexoki Dark
-Flexoki Light
-Floraverse
-Forest Blue
-Forge Ember
-Framer
-Front End Delight
-Frostbyte
-Fun Forrest
-Galaxy
-Galizur
-Ghostty Default Style Dark
-GitHub Dark Colorblind
-GitHub Dark Default
-GitHub Dark Dimmed
-GitHub Dark High Contrast
-GitHub Dark
-GitHub Light Colorblind
-GitHub Light Default
-GitHub Light High Contrast
-GitHub
-GitLab Dark Grey
-GitLab Dark
-GitLab Light
-Glacier
-Gleam Classic
-Gleam
-Grape
-Graphite
-Grass
-Green Phosphor CRT
-Grey Green
-Gruber Darker
-Gruvbox Dark Hard
-Gruvbox Dark
-Gruvbox Light Hard
-Gruvbox Light
-Gruvbox Material Dark
-Gruvbox Material Light
-Gruvbox Material
-Guezwhoz
-HaX0R Blue
-HaX0R Gr33N
-HaX0R R3D
-Hacktober
-Hardcore
-Harper
-Havn Daggry
-Havn Skumring
-Heeler
-Highway
-Hipster Green
-Hivacruz
-Homebrew
-Hopscotch.256
-Hopscotch
-Horizon Bright
-Horizon
-Hot Dog Stand (Mustard)
-Hot Dog Stand
-Hurtado
-Hybrid
-IBM 5153 CGA (Black)
-IBM 5153 CGA
-IC Green PPL
-IC Orange PPL
-IR Black
-IRIX Console
-IRIX Terminal
-Iceberg Dark
-Iceberg Light
-Idea
-Idle Toes
-Jackie Brown
-Japanesque
-Jellybeans
-JetBrains Darcula
-JetBrains Islands Dark
-JetCalm Light
-Jubi
-Kanagawa Dragon
-Kanagawa Lotus
-Kanagawa Wave
-Kanagawabones
-Kanso Ink
-Kanso Mist
-Kanso Pearl
-Kanso Zen
-Karasu Night
-Karasu Snow
-Karma Dark Dimmed
-Karma Dark HC
-Karma Dark
-Karma Light Dimmed
-Karma Light HC
-Karma Light
-Keys Ocean Sunset HC
-Keys Ocean Sunset
-Kibble
-Kitty Default
-Kitty Low Contrast
-Klein Void
-Kolorit
-Konsolas
-Kurokula
-Lab Fox
-Laser
-Later This Evening
-Lavandula
-Letterpress
-Light Owl
-Liquid Carbon Transparent
-Liquid Carbon
-London Bonfire Night
-London Columbia Road
-London Embankment Dusk
-London Soho Night
-Lovelace
-Man Page
-Mariana
-Matcha Zen
-Material Dark
-Material Darker
-Material Design Colors
-Material Ocean
-Material
-Mathias
-Matrix
-Matte Black
-Medallion
-Melange Dark
-Melange Light
-Mellifluous
-Mellow
-Mesila One
-Miami Heat
-Miasma
-Midnight In Mojave
-Mirage
-Misterioso
-Modus Operandi Deuteranopia
-Modus Operandi Tinted
-Modus Operandi Tritanopia
-Modus Operandi
-Modus Vivendi Deuteranopia
-Modus Vivendi Tinted
-Modus Vivendi Tritanopia
-Modus Vivendi
-Molokai
-Mona Lisa
-Monokai Classic
-Monokai Pro Light Sun
-Monokai Pro Light
-Monokai Pro Machine
-Monokai Pro Octagon
-Monokai Pro Ristretto
-Monokai Pro Spectrum
-Monokai Pro
-Monokai Remastered
-Monokai Soda
-Monokai SublimeText
-Monokai Vivid
-Monospace Dark
-Monospace Light
-Moonfly
-Moonwalk
-N0Tch2K
-Nebula Drift
-Neobones Dark
-Neobones Light
-Neon Purple
-Neon
-Neopolitan
-Neutron
-Night Lion V1
-Night Lion V2
-Night Owl
-Night Owlish Light
-Nightfox
-Niji
-No Clown Fiesta Light
-No Clown Fiesta
-Noctis Azureus
-Noctis Bordo
-Noctis Hibernus
-Noctis Lilac
-Noctis Lux
-Noctis Minimus
-Noctis Obscuro
-Noctis Sereno
-Noctis Uva
-Noctis Viola
-Noctis
-Nocturnal Winter
-Nord Light
-Nord Wave
-Nord
-Nordfox
-Novel
-Nvim Dark
-Nvim Light
-Obsidian
-Ocean
-Oceanic Material
-Oceanic Next
-Ollie
-One Dark Two
-One Double Dark
-One Double Light
-One Half Dark
-One Half Light
-Onenord Light
-Onenord
-Opaline
-Operator Mono Dark
-Overnight Slumber
-Oxblood
-Oxide
-Oxocarbon
-Pale Night Hc
-Pandora
-Paraiso Dark
-Patina Dark Soft
-Patina Dark
-Patina Lichen
-Patina Light
-Patina Moss
-Patina Stellar
-Patina
-Paul Millr
-Pencil Dark
-Pencil Light
-Peppermint
-Phala Green Dark
-Piatto Light
-Pierre Dark
-Pierre Light
-Pnevma
-Poimandres Darker
-Poimandres Storm
-Poimandres White
-Poimandres
-Popping And Locking
-Porcelain
-Powershell
-Primary
-Prism
-Pro Light
-Pro
-Purple Rain
-Purplepeter
-Pyrokai Light
-Pyrokai
-Rapture
-Raycast Dark
-Raycast Light
-Rebecca
-Red Alert
-Red Planet
-Red Sands
-Relaxed
-Retro Legends
-Retro
-Rippedcasts
-Rose Pine Dawn
-Rose Pine Moon
-Rose Pine
-Rouge 2
-Royal
-Ryuuko
-Sakura
-Sandstone Classic
-Sandstone Ink
-Sandstone Warm
-Sauber
-Scarlet Protocol
-Sea Shells
-Seafoam Pastel
-SeedFlip Abyss
-SeedFlip Amethyst
-SeedFlip Canopy
-SeedFlip Carbon
-SeedFlip Coral
-SeedFlip Ember
-SeedFlip Glacier
-SeedFlip Inkwell
-SeedFlip Ivory
-SeedFlip Nightfall
-SeedFlip Phosphor
-SeedFlip Pulse
-SeedFlip Ultraviolet
-SeedFlip Voltage
-SeedFlip Wavelength
-Selenized Black
-Selenized Dark
-Selenized Light
-Seoulbones Dark
-Seoulbones Light
-Sequoia Monochrome Dark
-Sequoia Monochrome Light
-Sequoia Moonlight Dark
-Sequoia Moonlight Light
-Sequoia Retro Dark
-Sequoia Retro Light
-Serendipity Midnight
-Serendipity Morning
-Serendipity Sunset
-Seti
-Shades Of Purple
-Shaman
-Shokunin
-Slate
-Sleepy Hollow
-Smyck
-Snazzy Soft
-Snazzy
-Soft Server
-Solarized Darcula
-Solarized Dark Higher Contrast
-Solarized Dark Patched
-Solarized Osaka Night
-Sonokai
-Spacedust
-Spacegray Bright
-Spacegray Eighties Dull
-Spacegray Eighties
-Spacegray
-Spiderman
-Spring
-Square
-Squintless
-Squirrelsong Dark
-Srcery
-Starlight
-Sublette
-Subliminal
-Sugarplum
-Sumi Linen
-Sumi Phosphor
-Sundried
-Sunset Drive
-Symfonic
-Synthwave Alpha
-Synthwave Everything
-Synthwave
-Tango Adapted
-Tango Half Adapted
-Tearout
-Teerb
-Terafox
-Terminal Basic Dark
-Terminal Basic
-Thayer Bright
-The Hulk
-Tinacious Design Dark
-Tinacious Design Light
-Token Dark
-Token Light
-TokyoNight Day
-TokyoNight Moon
-TokyoNight Night
-TokyoNight Storm
-TokyoNight
-Tomorrow Night Blue
-Tomorrow Night Bright
-Tomorrow Night Burns
-Tomorrow Night Eighties
-Tomorrow Night
-Tomorrow
-Toy Chest
-Trapped in Amber
-Treehouse
-Twilight
-Ubuntu
-Ultra Dark
-Ultra Violent
-Under The Sea
-Unikitty
-Urple
-Vague
-Vaughn
-Velvet Court
-Vercel
-Verdigris
-Vesper
-Vibrant Ink
-Vimbones
-Violet Dark
-Violet Light
-Violite
-Warm Neon
-Wez
-Whimsy
-Wild Cherry
-Wilmersdorf
-Wombat
-Wryan
-Xcode Dark hc
-Xcode Dark
-Xcode Light hc
-Xcode Light
-Xcode WWDC
-Zenbones Dark
-Zenbones Light
-Zenbones
-Zenburn
-Zenburned
-Zenwritten Dark
-Zenwritten Light
-base16-icy
-branch
-cyberpunk-icy
-iTerm2 Dark Background
-iTerm2 Default
-iTerm2 Light Background
-iTerm2 Pastel Dark Background
-iTerm2 Smoooooth
-iTerm2 Solarized Dark
-iTerm2 Solarized Light
-iTerm2 Tango Dark
-iTerm2 Tango Light
-novmbr
-owl
-traffic
-urban
+0x96f.properties
+12-bit Rainbow.properties
+3024 Day.properties
+3024 Night.properties
+Aardvark Blue.properties
+Aardvark Ink.properties
+Abernathy.properties
+Acid Lime.properties
+Adventure Time.properties
+Adventure.properties
+Adwaita Dark.properties
+Adwaita.properties
+Afterglow.properties
+Aizen Dark.properties
+Aizen Light.properties
+Alabaster.properties
+Alien Blood.properties
+Amber CRT Retro.properties
+Andromeda.properties
+Apple Classic.properties
+Apple System Colors Light.properties
+Apple System Colors.properties
+Arcoiris.properties
+Ardoise.properties
+Argonaut.properties
+Arthur.properties
+Atelier Sulphurpool.properties
+Atlas Ragnarok.properties
+Atom One Dark.properties
+Atom One Light.properties
+Atom.properties
+Aubade.properties
+Aura Dark.properties
+Aura.properties
+Aurora.properties
+Ayu Light.properties
+Ayu Mirage.properties
+Ayu.properties
+Banana Blueberry.properties
+Batman.properties
+Belafonte Day.properties
+Belafonte Night.properties
+Birds Of Paradise.properties
+Black Metal (Bathory).properties
+Black Metal (Burzum).properties
+Black Metal (Dark Funeral).properties
+Black Metal (Gorgoroth).properties
+Black Metal (Immortal).properties
+Black Metal (Khold).properties
+Black Metal (Marduk).properties
+Black Metal (Mayhem).properties
+Black Metal (Nile).properties
+Black Metal (Venom).properties
+Black Metal.properties
+Blazer.properties
+Blue Berry Pie.properties
+Blue Dolphin.properties
+Blue Matrix.properties
+Bluloco Dark.properties
+Bluloco Light.properties
+Borland.properties
+Box.properties
+Breadog.properties
+Breeze.properties
+Bright Lights.properties
+Broadcast.properties
+Brogrammer.properties
+Builtin Dark.properties
+Builtin Light.properties
+Builtin Pastel Dark.properties
+Builtin Tango Dark.properties
+Builtin Tango Light.properties
+C64.properties
+CGA.properties
+CLRS.properties
+Calamity.properties
+Carbonfox.properties
+Catppuccin Frappe.properties
+Catppuccin Latte.properties
+Catppuccin Macchiato.properties
+Catppuccin Mocha.properties
+Chalk.properties
+Chalkboard.properties
+Challenger Deep.properties
+Chester.properties
+Ciapre.properties
+Citrus Ink.properties
+Citruszest.properties
+Claude Dark.properties
+Claude Light.properties
+Claude.properties
+Clear Dark.properties
+Clear Light.properties
+Cobalt Neon.properties
+Cobalt Next Dark.properties
+Cobalt Next Minimal.properties
+Cobalt Next.properties
+Cobalt2.properties
+Coffee Theme.properties
+Cool Night.properties
+Crayon Pony Fish.properties
+Cursor Dark.properties
+Cursor Light.properties
+Cutie Pro.properties
+Cyberdyne.properties
+Cyberpunk Scarlet Protocol.properties
+Cyberpunk.properties
+Dalton Dark.properties
+Dark Modern.properties
+Dark Pastel.properties
+Dark+.properties
+Darkermatrix.properties
+Darkmatrix.properties
+Darkside.properties
+Dawnfox.properties
+Daybreak.properties
+Dayfox.properties
+Deep.properties
+Desert.properties
+Detuned.properties
+Dimidium.properties
+Dimmed Monokai.properties
+Django Reborn Again.properties
+Django Smooth.properties
+Django.properties
+Dogxi Misty.properties
+Doom One.properties
+Doom Peacock.properties
+Dot Gov.properties
+Dracula+.properties
+Dracula.properties
+Driftwood.properties
+Duckbones.properties
+Duotone Dark.properties
+Duskfox.properties
+ENCOM.properties
+Earthsong.properties
+Eclipse.properties
+Electron Highlighter Day.properties
+Electron Highlighter.properties
+Elegant.properties
+Elemental.properties
+Elementary.properties
+Embark.properties
+Embers Dark.properties
+Emerald Synth.properties
+Espresso Libre.properties
+Espresso.properties
+Everblush.properties
+Everforest Dark Hard.properties
+Everforest Dark Med.properties
+Everforest Dark Soft.properties
+Everforest Light Hard.properties
+Everforest Light Med.properties
+Everforest Light Soft.properties
+Fahrenheit.properties
+Fairyfloss.properties
+Farmhouse Dark.properties
+Farmhouse Light.properties
+Fideloper.properties
+Firefly Traditional.properties
+Firefox Dev.properties
+Firewatch.properties
+Fish Tank.properties
+Flat.properties
+Flatland.properties
+Flexoki Dark.properties
+Flexoki Light.properties
+Floraverse.properties
+Forest Blue.properties
+Forge Ember.properties
+Framer.properties
+Front End Delight.properties
+Frostbyte.properties
+Fun Forrest.properties
+Galaxy.properties
+Galizur.properties
+Ghostty Default Style Dark.properties
+GitHub Dark Colorblind.properties
+GitHub Dark Default.properties
+GitHub Dark Dimmed.properties
+GitHub Dark High Contrast.properties
+GitHub Dark.properties
+GitHub Light Colorblind.properties
+GitHub Light Default.properties
+GitHub Light High Contrast.properties
+GitHub.properties
+GitLab Dark Grey.properties
+GitLab Dark.properties
+GitLab Light.properties
+Glacier.properties
+Gleam Classic.properties
+Gleam.properties
+Grape.properties
+Graphite.properties
+Grass.properties
+Green Phosphor CRT.properties
+Grey Green.properties
+Gruber Darker.properties
+Gruvbox Dark Hard.properties
+Gruvbox Dark.properties
+Gruvbox Light Hard.properties
+Gruvbox Light.properties
+Gruvbox Material Dark.properties
+Gruvbox Material Light.properties
+Gruvbox Material.properties
+Guezwhoz.properties
+HaX0R Blue.properties
+HaX0R Gr33N.properties
+HaX0R R3D.properties
+Hacktober.properties
+Hardcore.properties
+Harper.properties
+Havn Daggry.properties
+Havn Skumring.properties
+Heeler.properties
+Highway.properties
+Hipster Green.properties
+Hivacruz.properties
+Homebrew.properties
+Hopscotch.256.properties
+Hopscotch.properties
+Horizon Bright.properties
+Horizon.properties
+Hot Dog Stand (Mustard).properties
+Hot Dog Stand.properties
+Hurtado.properties
+Hybrid.properties
+IBM 5153 CGA (Black).properties
+IBM 5153 CGA.properties
+IC Green PPL.properties
+IC Orange PPL.properties
+IR Black.properties
+IRIX Console.properties
+IRIX Terminal.properties
+Iceberg Dark.properties
+Iceberg Light.properties
+Idea.properties
+Idle Toes.properties
+Jackie Brown.properties
+Japanesque.properties
+Jellybeans.properties
+JetBrains Darcula.properties
+JetBrains Islands Dark.properties
+JetCalm Light.properties
+Jubi.properties
+Kanagawa Dragon.properties
+Kanagawa Lotus.properties
+Kanagawa Wave.properties
+Kanagawabones.properties
+Kanso Ink.properties
+Kanso Mist.properties
+Kanso Pearl.properties
+Kanso Zen.properties
+Karasu Night.properties
+Karasu Snow.properties
+Karma Dark Dimmed.properties
+Karma Dark HC.properties
+Karma Dark.properties
+Karma Light Dimmed.properties
+Karma Light HC.properties
+Karma Light.properties
+Keys Ocean Sunset HC.properties
+Keys Ocean Sunset.properties
+Kibble.properties
+Kitty Default.properties
+Kitty Low Contrast.properties
+Klein Void.properties
+Kolorit.properties
+Konsolas.properties
+Kurokula.properties
+Lab Fox.properties
+Laser.properties
+Later This Evening.properties
+Lavandula.properties
+Letterpress.properties
+Light Owl.properties
+Liquid Carbon Transparent.properties
+Liquid Carbon.properties
+London Bonfire Night.properties
+London Columbia Road.properties
+London Embankment Dusk.properties
+London Soho Night.properties
+Lovelace.properties
+Man Page.properties
+Mariana.properties
+Matcha Zen.properties
+Material Dark.properties
+Material Darker.properties
+Material Design Colors.properties
+Material Ocean.properties
+Material.properties
+Mathias.properties
+Matrix.properties
+Matte Black.properties
+Medallion.properties
+Melange Dark.properties
+Melange Light.properties
+Mellifluous.properties
+Mellow.properties
+Mesila One.properties
+Miami Heat.properties
+Miasma.properties
+Midnight In Mojave.properties
+Mirage.properties
+Misterioso.properties
+Modus Operandi Deuteranopia.properties
+Modus Operandi Tinted.properties
+Modus Operandi Tritanopia.properties
+Modus Operandi.properties
+Modus Vivendi Deuteranopia.properties
+Modus Vivendi Tinted.properties
+Modus Vivendi Tritanopia.properties
+Modus Vivendi.properties
+Molokai.properties
+Mona Lisa.properties
+Monokai Classic.properties
+Monokai Pro Light Sun.properties
+Monokai Pro Light.properties
+Monokai Pro Machine.properties
+Monokai Pro Octagon.properties
+Monokai Pro Ristretto.properties
+Monokai Pro Spectrum.properties
+Monokai Pro.properties
+Monokai Remastered.properties
+Monokai Soda.properties
+Monokai SublimeText.properties
+Monokai Vivid.properties
+Monospace Dark.properties
+Monospace Light.properties
+Moonfly.properties
+Moonwalk.properties
+N0Tch2K.properties
+Nebula Drift.properties
+Neobones Dark.properties
+Neobones Light.properties
+Neon Purple.properties
+Neon.properties
+Neopolitan.properties
+Neutron.properties
+Night Lion V1.properties
+Night Lion V2.properties
+Night Owl.properties
+Night Owlish Light.properties
+Nightfox.properties
+Niji.properties
+No Clown Fiesta Light.properties
+No Clown Fiesta.properties
+Noctis Azureus.properties
+Noctis Bordo.properties
+Noctis Hibernus.properties
+Noctis Lilac.properties
+Noctis Lux.properties
+Noctis Minimus.properties
+Noctis Obscuro.properties
+Noctis Sereno.properties
+Noctis Uva.properties
+Noctis Viola.properties
+Noctis.properties
+Nocturnal Winter.properties
+Nord Light.properties
+Nord Wave.properties
+Nord.properties
+Nordfox.properties
+Novel.properties
+Nvim Dark.properties
+Nvim Light.properties
+Obsidian.properties
+Ocean.properties
+Oceanic Material.properties
+Oceanic Next.properties
+Ollie.properties
+One Dark Two.properties
+One Double Dark.properties
+One Double Light.properties
+One Half Dark.properties
+One Half Light.properties
+Onenord Light.properties
+Onenord.properties
+Opaline.properties
+Operator Mono Dark.properties
+Overnight Slumber.properties
+Oxblood.properties
+Oxide.properties
+Oxocarbon.properties
+Pale Night Hc.properties
+Pandora.properties
+Paraiso Dark.properties
+Patina Dark Soft.properties
+Patina Dark.properties
+Patina Lichen.properties
+Patina Light.properties
+Patina Moss.properties
+Patina Stellar.properties
+Patina.properties
+Paul Millr.properties
+Pencil Dark.properties
+Pencil Light.properties
+Peppermint.properties
+Phala Green Dark.properties
+Piatto Light.properties
+Pierre Dark.properties
+Pierre Light.properties
+Pnevma.properties
+Poimandres Darker.properties
+Poimandres Storm.properties
+Poimandres White.properties
+Poimandres.properties
+Popping And Locking.properties
+Porcelain.properties
+Powershell.properties
+Primary.properties
+Prism.properties
+Pro Light.properties
+Pro.properties
+Purple Rain.properties
+Purplepeter.properties
+Pyrokai Light.properties
+Pyrokai.properties
+Rapture.properties
+Raycast Dark.properties
+Raycast Light.properties
+Rebecca.properties
+Red Alert.properties
+Red Planet.properties
+Red Sands.properties
+Relaxed.properties
+Retro Legends.properties
+Retro.properties
+Rippedcasts.properties
+Rose Pine Dawn.properties
+Rose Pine Moon.properties
+Rose Pine.properties
+Rouge 2.properties
+Royal.properties
+Ryuuko.properties
+Sakura.properties
+Sandstone Classic.properties
+Sandstone Ink.properties
+Sandstone Warm.properties
+Sauber.properties
+Scarlet Protocol.properties
+Sea Shells.properties
+Seafoam Pastel.properties
+SeedFlip Abyss.properties
+SeedFlip Amethyst.properties
+SeedFlip Canopy.properties
+SeedFlip Carbon.properties
+SeedFlip Coral.properties
+SeedFlip Ember.properties
+SeedFlip Glacier.properties
+SeedFlip Inkwell.properties
+SeedFlip Ivory.properties
+SeedFlip Nightfall.properties
+SeedFlip Phosphor.properties
+SeedFlip Pulse.properties
+SeedFlip Ultraviolet.properties
+SeedFlip Voltage.properties
+SeedFlip Wavelength.properties
+Selenized Black.properties
+Selenized Dark.properties
+Selenized Light.properties
+Seoulbones Dark.properties
+Seoulbones Light.properties
+Sequoia Monochrome Dark.properties
+Sequoia Monochrome Light.properties
+Sequoia Moonlight Dark.properties
+Sequoia Moonlight Light.properties
+Sequoia Retro Dark.properties
+Sequoia Retro Light.properties
+Serendipity Midnight.properties
+Serendipity Morning.properties
+Serendipity Sunset.properties
+Seti.properties
+Shades Of Purple.properties
+Shaman.properties
+Shokunin.properties
+Slate.properties
+Sleepy Hollow.properties
+Smyck.properties
+Snazzy Soft.properties
+Snazzy.properties
+Soft Server.properties
+Solarized Darcula.properties
+Solarized Dark Higher Contrast.properties
+Solarized Dark Patched.properties
+Solarized Osaka Night.properties
+Sonokai.properties
+Spacedust.properties
+Spacegray Bright.properties
+Spacegray Eighties Dull.properties
+Spacegray Eighties.properties
+Spacegray.properties
+Spiderman.properties
+Spring.properties
+Square.properties
+Squintless.properties
+Squirrelsong Dark.properties
+Srcery.properties
+Starlight.properties
+Sublette.properties
+Subliminal.properties
+Sugarplum.properties
+Sumi Linen.properties
+Sumi Phosphor.properties
+Sundried.properties
+Sunset Drive.properties
+Symfonic.properties
+Synthwave Alpha.properties
+Synthwave Everything.properties
+Synthwave.properties
+Tango Adapted.properties
+Tango Half Adapted.properties
+Tearout.properties
+Teerb.properties
+Terafox.properties
+Terminal Basic Dark.properties
+Terminal Basic.properties
+Thayer Bright.properties
+The Hulk.properties
+Tinacious Design Dark.properties
+Tinacious Design Light.properties
+Token Dark.properties
+Token Light.properties
+TokyoNight Day.properties
+TokyoNight Moon.properties
+TokyoNight Night.properties
+TokyoNight Storm.properties
+TokyoNight.properties
+Tomorrow Night Blue.properties
+Tomorrow Night Bright.properties
+Tomorrow Night Burns.properties
+Tomorrow Night Eighties.properties
+Tomorrow Night.properties
+Tomorrow.properties
+Toy Chest.properties
+Trapped in Amber.properties
+Treehouse.properties
+Twilight.properties
+Ubuntu.properties
+Ultra Dark.properties
+Ultra Violent.properties
+Under The Sea.properties
+Unikitty.properties
+Urple.properties
+Vague.properties
+Vaughn.properties
+Velvet Court.properties
+Vercel.properties
+Verdigris.properties
+Vesper.properties
+Vibrant Ink.properties
+Vimbones.properties
+Violet Dark.properties
+Violet Light.properties
+Violite.properties
+Warm Neon.properties
+Wez.properties
+Whimsy.properties
+Wild Cherry.properties
+Wilmersdorf.properties
+Wombat.properties
+Wryan.properties
+Xcode Dark hc.properties
+Xcode Dark.properties
+Xcode Light hc.properties
+Xcode Light.properties
+Xcode WWDC.properties
+Zenbones Dark.properties
+Zenbones Light.properties
+Zenbones.properties
+Zenburn.properties
+Zenburned.properties
+Zenwritten Dark.properties
+Zenwritten Light.properties
+base16-icy.properties
+branch.properties
+cyberpunk-icy.properties
+iTerm2 Dark Background.properties
+iTerm2 Default.properties
+iTerm2 Light Background.properties
+iTerm2 Pastel Dark Background.properties
+iTerm2 Smoooooth.properties
+iTerm2 Solarized Dark.properties
+iTerm2 Solarized Light.properties
+iTerm2 Tango Dark.properties
+iTerm2 Tango Light.properties
+novmbr.properties
+owl.properties
+traffic.properties
+urban.properties

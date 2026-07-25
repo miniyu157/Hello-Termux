@@ -104,7 +104,7 @@ termux::apply_web_theme() {
     local theme_name="$1"
     printf "$MSG_downloading_theme" "$theme_name"
     pure::backup_file "$path_termux_colors_properties"
-    curl -#L "${url_iterm2_color_schemes_prefix}/${theme_name// /%20}.properties" -o "$path_termux_colors_properties" && {
+    curl -#L "${url_iterm2_color_schemes_prefix}/${theme_name// /%20}" -o "$path_termux_colors_properties" && {
         termux-reload-settings
         printf "$MSG_applied_theme" "$theme_name"
     }
@@ -116,7 +116,7 @@ termux::apply_keymap() {
     local name="$1"
     printf "$MSG_downloading_keymap" "$name"
     pure::backup_file "$path_termux_key_properties"
-    curl -#L "${url_ht_keymaps_prefix}/${name// /%20}.properties" -o "$path_termux_key_properties" && {
+    curl -#L "${url_ht_keymaps_prefix}/${name// /%20}" -o "$path_termux_key_properties" && {
         termux-reload-settings
         printf "$MSG_applied_keymap" "$name"
     }
@@ -157,7 +157,7 @@ menu::t() {
         return 1
     }
 
-    local chosen_theme=$(printf '%s\n' "$theme_list" | fzf --prompt="$MSG_theme_search_prompt")
+    local chosen_theme=$(printf '%s\n' "$theme_list" | awk '{full=$0; sub(/\.properties$/,""); print $0 "\t" full}' | fzf --prompt="$MSG_theme_search_prompt" --with-nth=1 --delimiter='\t' | cut -f2)
     [[ -n $chosen_theme ]] || return 1
 
     termux::apply_web_theme "$chosen_theme"
@@ -174,7 +174,7 @@ menu::f() {
         return 1
     }
 
-    local chosen=$(printf '%s\n' "$font_list" | fzf --prompt="$MSG_font_search_prompt")
+    local chosen=$(printf '%s\n' "$font_list" | awk -F/ '{full=$0; ext=$NF; sub(/\.[^.]+$/,"",ext); print ext "\t" full}' | fzf --prompt="$MSG_font_search_prompt" --with-nth=1 --delimiter='\t' | cut -f2)
     [[ -n $chosen ]] || return 1
 
     termux::apply_nerd_font "$chosen"
@@ -191,7 +191,7 @@ menu::k() {
         return 1
     }
 
-    local chosen=$(printf '%s\n' "$keymap_list" | fzf --prompt="$MSG_keymap_search_prompt")
+    local chosen=$(printf '%s\n' "$keymap_list" | awk '{full=$0; sub(/\.properties$/,""); print $0 "\t" full}' | fzf --prompt="$MSG_keymap_search_prompt" --with-nth=1 --delimiter='\t' | cut -f2)
     [[ -n $chosen ]] || return 1
     termux::apply_keymap "$chosen"
 }
@@ -200,7 +200,7 @@ menu::k::title() { printf "$MSG_MENU_keymap_browse"; }
 menu::tb() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
 menu::tb::title() { printf "$MSG_MENU_theme_browse_browser"; }
 
-menu::tt() { termux::apply_web_theme "Dracula+"; }
+menu::tt() { termux::apply_web_theme "Dracula+.properties"; }
 menu::tt::title() { printf "$MSG_MENU_theme_quick_dracula"; }
 
 menu::fb() { termux::open_url "https://www.programmingfonts.org/#oxproto"; }
@@ -212,7 +212,7 @@ menu::ff::title() { printf "$MSG_MENU_font_quick_iosevka"; }
 menu::kb() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
 menu::kb::title() { printf "$MSG_MENU_keymap_browse_browser"; }
 
-menu::kk() { termux::apply_keymap "Enhanced"; }
+menu::kk() { termux::apply_keymap "Enhanced.properties"; }
 menu::kk::title() { printf "$MSG_MENU_keymap_apply"; }
 
 menu::s() {

@@ -1,3 +1,3 @@
-Empty
-Enhanced + F-Keys
-Enhanced
+Empty.properties
+Enhanced + F-Keys.properties
+Enhanced.properties
