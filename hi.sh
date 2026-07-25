@@ -36,10 +36,13 @@ app::set_resource_service() {
 }
 
 app::set_paths() {
+    path_termux_mirrors_dir="$PREFIX/etc/termux/mirrors"
     path_termux_mirror_link="$PREFIX/etc/termux/chosen_mirrors"
     path_termux_key_properties="$HOME/.termux/termux.properties"
     path_termux_colors_properties="$HOME/.termux/colors.properties"
     path_termux_font_ttf="$HOME/.termux/font.ttf"
+
+    path_termux_apt_lists="$PREFIX/var/lib/apt/lists"
 
     path_cache_dir="$HOME/.cache/hello-termux"
     path_cache_theme_list="$path_cache_dir/theme_list"
@@ -47,6 +50,8 @@ app::set_paths() {
 
     path_ht_install_bin="$PREFIX/bin/hi"
     path_ht_uninstall_bin="$PREFIX/bin/hi-uninstall"
+
+    mkdir -p "$path_cache_dir"
 }
 
 app::set_deps() {
@@ -69,7 +74,7 @@ pure::fetch_cached() {
     local -n _out="$1"
     local _cache="$2" _url="$3"
 
-    if [[ -s $_cache ]] && [[ -z $(find "$_cache" -mtime +30 2>/dev/null) ]]; then
+    if [[ -s $_cache ]] && [[ -z $(find "$_cache" -mtime +30 2> /dev/null) ]]; then
         _out=$(< "$_cache")
     else
         _out=$(curl -#L "$_url") || return 1
@@ -104,12 +109,12 @@ menu::1::title() {
     printf "$MSG_MENU_repo_change" "${link:-$MSG_MENU_repo_change_none}"
 }
 
-menu::1a() { ln -sf "$PREFIX/etc/termux/mirrors/chinese_mainland" "$path_termux_mirror_link" && printf "$MSG_done"; }
+menu::1a() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_termux_mirror_link" && printf "$MSG_done"; }
 menu::1a::title() { printf "$MSG_MENU_repo_quick_china"; }
 
 menu::2() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
 menu::2::title() {
-    local _ts=$(find "$PREFIX/var/lib/apt/lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
+    local _ts=$(find "$path_termux_apt_lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
     local _date
     [[ -n $_ts ]] && _date=$(date -d "@$_ts" +'%Y-%m-%d %H:%M:%S' 2> /dev/null)
     printf "$MSG_MENU_pkg_update" "${_date:-$MSG_MENU_pkg_update_none}"
@@ -217,9 +222,9 @@ EOF
 menu::i::title() { printf "${MSG_MENU_install}"; }
 
 menu::l() {
-    case "$_lang" in
-        zh) _lang="en" ;;
-        *) _lang="zh" ;;
+    case "$APP_LANG" in
+        zh) APP_LANG="en" ;;
+        *) APP_LANG="zh" ;;
     esac
     app::i18n_load
     MENU_QUICK=1
@@ -239,8 +244,10 @@ menu::q::title() { printf "${MSG_MENU_quit}"; }
 
 # -- i18n --
 
+app::set_lang() { case "$(getprop persist.sys.locale 2> /dev/null)" in zh-*) APP_LANG="zh" ;; *) APP_LANG="en" ;; esac }
+
 app::i18n_load() {
-    case "$_lang" in
+    case "$APP_LANG" in
         zh)
             MSG_dep_installing="正在安装缺少的依赖: %s\n"
             MSG_dep_failed="依赖安装失败: %s\n"
@@ -328,13 +335,11 @@ app::i18n_load() {
 
 declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[1;38;2;255;115;108m' _cat2=$'\e[1;38;2;121;167;252m' _cat3=$'\e[1;38;2;255;174;193m' _cat4=$'\e[1;38;2;255;226;2m'
 
-_loc=$(getprop persist.sys.locale 2> /dev/null) || true
-case "${_loc:-}" in zh-*) _lang="zh" ;; *) _lang="en" ;; esac
+app::set_lang
 app::i18n_load
 
 app::set_paths
 app::set_resource_service cdn.jsdelivr.net
-mkdir -p "$path_cache_dir"
 
 # -- loop menu --
 
