@@ -270,6 +270,12 @@ menu::cl() {
 }
 menu::cl::title() { printf "${MSG_MENU_cache_clear}"; }
 
+menu::is() { termux::open_url "https://github.com/miniyu157/hello-termux/issues"; }
+menu::is::title() { printf "$MSG_MENU_issues"; }
+
+menu::gh() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::gh::title() { printf "$MSG_MENU_gh"; }
+
 menu::q() { exit 0; }
 menu::q::title() { printf "${MSG_MENU_quit}"; }
 
@@ -319,6 +325,8 @@ app::i18n_load() {
             MSG_MENU_install=" 将此程序安装到本地"
             MSG_MENU_cache_clear=" 清除下载缓存${_faint}（TTL: 30天）${_off}"
             MSG_MENU_lang_switch=" 切换语言${_faint}（目前：中文）${_off}"
+            MSG_MENU_issues="󰭻 前往 Issues 页面"
+            MSG_MENU_gh="󰊤 前往 Hello Termux 的仓库"
             MSG_MENU_quit="󰩈 退出程序"
             MSG_menu_prompt="键入需要的工具回车运行:\n"
             MSG_menu_done=" 工具运行结束，退出码: %s\n"
@@ -364,6 +372,8 @@ app::i18n_load() {
             MSG_MENU_install=" Install this program locally"
             MSG_MENU_cache_clear=" Clear download cache${_faint} (TTL: 30 days)${_off}"
             MSG_MENU_lang_switch=" Switch Language${_faint} (Current: English)${_off}"
+            MSG_MENU_issues="󰭻 Go to Issues page"
+            MSG_MENU_gh="󰊤 Go to Hello Termux repository"
             MSG_MENU_quit="󰩈 Exit"
             MSG_menu_prompt="Type a key and press Enter to run:\n"
             MSG_menu_done=" Tool finished, exit code: %s\n"
@@ -391,7 +401,7 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(m mc u f fb ff t tb tt k kb kk s l i cl q)
+        menu_keys=(m mc u f fb ff t tb tt k kb kk s l i cl is gh q)
         for _id in "${menu_keys[@]}"; do
             if compgen -A function -- "menu::${_id}::title" > /dev/null; then
                 printf "${_faint}${_italic}%3s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
