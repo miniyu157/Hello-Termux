@@ -201,10 +201,6 @@ menu::s() {
 menu::s::title() { printf "$MSG_MENU_resource_switch" "$app_resource_service"; }
 
 menu::i() {
-    if [[ -f $path_ht_install_bin ]]; then
-        printf "$MSG_install_exists"
-        return 1
-    fi
     printf "$MSG_fetching_keymap" "$url_ht_self"
     curl -#L "$url_ht_self" -o "$path_ht_install_bin" || {
         printf "$MSG_fetch_failed" "$url_ht_self"
@@ -258,7 +254,6 @@ app::i18n_load() {
             MSG_MENU_repo_change="${_cat1}更换软件包源${_faint}（镜像: %s）${_off}"
             MSG_MENU_repo_change_none="未设置"
             MSG_done="设置完成。\n"
-            MSG_install_exists="hi 已经安装到本地。\n"
             MSG_install_done="安装完成。使用 hi 启动。\n使用 hi-uninstall 卸载。\n"
             MSG_MENU_repo_quick_china="${_cat1}快捷设置中国大陆软件源${_off}"
             MSG_MENU_pkg_update="${_cat1}更新和升级软件包${_faint}（上次更新: %s）${_off}"
@@ -298,7 +293,6 @@ app::i18n_load() {
             MSG_MENU_repo_change="${_cat1}Change package mirror${_faint} (mirror: %s)${_off}"
             MSG_MENU_repo_change_none="none"
             MSG_done="Done.\n"
-            MSG_install_exists="hi is already installed.\n"
             MSG_install_done="Done. Run 'hi' to start.\nRun 'hi-uninstall' to uninstall.\n"
             MSG_MENU_repo_quick_china="${_cat1}Quick-set Chinese mainland mirror${_off}"
             MSG_MENU_pkg_update="${_cat1}Update and upgrade packages${_faint} (last update: %s)${_off}"
