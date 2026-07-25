@@ -359,7 +359,7 @@ EOF
         exit 0
     }
     [[ -z $choice ]] && continue
-    compgen -A function -- "menu::${choice}" > /dev/null || continue
+    compgen -A function -- "menu::${choice}" | grep -qx "menu::${choice}" || continue
     history -s -- "$choice"
     MENU_QUICK=0
     "menu::${choice}"
