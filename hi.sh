@@ -7,29 +7,35 @@ app::set_resource_service() {
     case "$service" in
         cdn.jsdelivr.net)
             app_resource_service="cdn.jsdelivr.net"
-            url_ht_properties="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymaps/enhanced.properties"
+            url_ht_enhanced_keymap="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymaps/enhanced.properties"
             url_ht_theme_text="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/theme_list.txt"
             url_iterm2_color_schemes_prefix="https://cdn.jsdelivr.net/gh/mbadolato/iTerm2-Color-Schemes@master/termux"
             url_ht_font_text="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/font_list.txt"
             url_nerd_fonts_download_prefix="https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@master/patched-fonts"
+            url_ht_keymap_text="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymap_list.txt"
+            url_ht_keymaps_prefix="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymaps"
             url_ht_self="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/hi.sh"
             ;;
         github.com)
             app_resource_service="github.com"
-            url_ht_properties="https://github.com/miniyu157/hello-termux/raw/main/keymaps/enhanced.properties"
+            url_ht_enhanced_keymap="https://github.com/miniyu157/hello-termux/raw/main/keymaps/enhanced.properties"
             url_ht_theme_text="https://github.com/miniyu157/hello-termux/raw/main/theme_list.txt"
             url_iterm2_color_schemes_prefix="https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/master/termux"
             url_ht_font_text="https://github.com/miniyu157/hello-termux/raw/main/font_list.txt"
             url_nerd_fonts_download_prefix="https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/patched-fonts"
+            url_ht_keymap_text="https://github.com/miniyu157/hello-termux/raw/main/keymap_list.txt"
+            url_ht_keymaps_prefix="https://github.com/miniyu157/hello-termux/raw/main/keymaps"
             url_ht_self="https://github.com/miniyu157/hello-termux/raw/main/hi.sh"
             ;;
         cdn.statically.io)
             app_resource_service="cdn.statically.io"
-            url_ht_properties="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymaps/enhanced.properties"
+            url_ht_enhanced_keymap="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymaps/enhanced.properties"
             url_ht_theme_text="https://cdn.statically.io/gh/miniyu157/hello-termux/main/theme_list.txt"
             url_iterm2_color_schemes_prefix="https://cdn.statically.io/gh/mbadolato/iTerm2-Color-Schemes/master/termux"
             url_ht_font_text="https://cdn.statically.io/gh/miniyu157/hello-termux/main/font_list.txt"
             url_nerd_fonts_download_prefix="https://cdn.statically.io/gh/ryanoasis/nerd-fonts/master/patched-fonts"
+            url_ht_keymap_text="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymap_list.txt"
+            url_ht_keymaps_prefix="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymaps"
             url_ht_self="https://cdn.statically.io/gh/miniyu157/hello-termux/main/hi.sh"
             ;;
     esac
@@ -47,6 +53,7 @@ app::set_paths() {
     path_cache_dir="$HOME/.cache/hello-termux"
     path_cache_theme_list="$path_cache_dir/theme_list"
     path_cache_font_list="$path_cache_dir/font_list"
+    path_cache_keymap_list="$path_cache_dir/keymap_list"
 
     path_ht_install_bin="$PREFIX/bin/hi"
     path_ht_uninstall_bin="$PREFIX/bin/hi-uninstall"
@@ -103,25 +110,25 @@ termux::open_url() {
     }
 }
 
-menu::1() { termux-change-repo; }
-menu::1::title() {
+menu::m() { termux-change-repo; }
+menu::m::title() {
     local link=$(readlink "$path_termux_mirror_link")
     link="${link##*/}"
     printf "$MSG_MENU_repo_change" "${link:-$MSG_MENU_repo_change_none}"
 }
 
-menu::1a() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_termux_mirror_link" && printf "$MSG_done"; }
-menu::1a::title() { printf "$MSG_MENU_repo_quick_china"; }
+menu::mc() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_termux_mirror_link" && printf "$MSG_done"; }
+menu::mc::title() { printf "$MSG_MENU_repo_quick_china"; }
 
-menu::2() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
-menu::2::title() {
+menu::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
+menu::u::title() {
     local _ts=$(find "$path_termux_apt_lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
     local _date
     [[ -n $_ts ]] && _date=$(date -d "@$_ts" +'%Y-%m-%d %H:%M:%S' 2> /dev/null)
     printf "$MSG_MENU_pkg_update" "${_date:-$MSG_MENU_pkg_update_none}"
 }
 
-menu::4() {
+menu::t() {
     app::set_deps || return 1
 
     local theme_list
@@ -142,19 +149,19 @@ menu::4() {
         printf "$MSG_applied_theme" "$chosen_theme"
     }
 }
-menu::4::title() { printf "$MSG_MENU_theme_browse"; }
+menu::t::title() { printf "$MSG_MENU_theme_browse"; }
 
-menu::4a() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
-menu::4a::title() { printf "$MSG_MENU_theme_browse_browser"; }
+menu::tb() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
+menu::tb::title() { printf "$MSG_MENU_theme_browse_browser"; }
 
-menu::4b() {
+menu::tt() {
     pure::backup_file "$path_termux_colors_properties"
     base64 -d <<< 'IyBEcmFjdWxhKwpmb3JlZ3JvdW5kPSNmOGY4ZjIKYmFja2dyb3VuZD0jMjEyMTIxCmN1cnNvcj0jZWNlZmY0Cgpjb2xvcjA9IzIxMjIyYwpjb2xvcjE9I2ZmNTU1NQpjb2xvcjI9IzUwZmE3Ygpjb2xvcjM9I2ZmY2I2Ygpjb2xvcjQ9IzgyYWFmZgpjb2xvcjU9I2M3OTJlYQpjb2xvcjY9IzhiZTlmZApjb2xvcjc9I2Y4ZjhmMgoKY29sb3I4PSM1NDU0NTQKY29sb3I5PSNmZjZlNmUKY29sb3IxMD0jNjlmZjk0CmNvbG9yMTE9I2ZmY2I2Ygpjb2xvcjEyPSNkNmFjZmYKY29sb3IxMz0jZmY5MmRmCmNvbG9yMTQ9I2E0ZmZmZgpjb2xvcjE1PSNmOGY4ZjIK' > "$path_termux_colors_properties"
     termux-reload-settings
 }
-menu::4b::title() { printf "$MSG_MENU_theme_quick_dracula"; }
+menu::tt::title() { printf "$MSG_MENU_theme_quick_dracula"; }
 
-menu::3() {
+menu::f() {
     app::set_deps || return 1
 
     local font_list
@@ -173,23 +180,50 @@ menu::3() {
     }
     termux::apply_nerd_font "$chosen"
 }
-menu::3::title() { printf "$MSG_MENU_font_browse"; }
+menu::f::title() { printf "$MSG_MENU_font_browse"; }
 
-menu::3a() { termux::open_url "https://www.programmingfonts.org/#oxproto"; }
-menu::3a::title() { printf "$MSG_MENU_font_browse_browser"; }
+menu::fb() { termux::open_url "https://www.programmingfonts.org/#oxproto"; }
+menu::fb::title() { printf "$MSG_MENU_font_browse_browser"; }
 
-menu::3b() { termux::apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
-menu::3b::title() { printf "$MSG_MENU_font_quick_iosevka"; }
+menu::ff() { termux::apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
+menu::ff::title() { printf "$MSG_MENU_font_quick_iosevka"; }
 
-menu::k() {
+menu::kk() {
     pure::backup_file "$path_termux_key_properties"
-    printf "$MSG_fetching_keymap" "$url_ht_properties"
-    curl -#L "$url_ht_properties" -o "$path_termux_key_properties" && {
+    printf "$MSG_fetching_keymap" "$url_ht_enhanced_keymap"
+    curl -#L "$url_ht_enhanced_keymap" -o "$path_termux_key_properties" && {
         termux-reload-settings
         printf "$MSG_done"
     }
 }
-menu::k::title() { printf "$MSG_MENU_keymap_apply"; }
+menu::kk::title() { printf "$MSG_MENU_keymap_apply"; }
+
+menu::k() {
+    app::set_deps || return 1
+
+    local keymap_list
+    printf "$MSG_fetching_keymap_list" "$url_ht_keymap_text"
+    pure::fetch_cached keymap_list "$path_cache_keymap_list" "$url_ht_keymap_text" || {
+        printf "$MSG_fetch_failed" "$url_ht_keymap_text"
+        return 1
+    }
+    [[ -n $keymap_list ]] || return 1
+    local chosen=$(printf '%s\n' "$keymap_list" | fzf --delimiter=$'\t' --with-nth=1 --prompt="$MSG_keymap_search_prompt")
+    [[ -n $chosen ]] || return 1
+
+    local display="${chosen%%$'\t'*}"
+    local file="${chosen##*$'\t'}"
+    printf "$MSG_downloading_keymap" "$display"
+    pure::backup_file "$path_termux_key_properties"
+    curl -#L "${url_ht_keymaps_prefix}/${file}" -o "$path_termux_key_properties" && {
+        termux-reload-settings
+        printf "$MSG_applied_keymap" "$display"
+    }
+}
+menu::k::title() { printf "$MSG_MENU_keymap_browse"; }
+
+menu::kb() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::kb::title() { printf "$MSG_MENU_keymap_browse_browser"; }
 
 menu::s() {
     case "$app_resource_service" in
@@ -252,7 +286,7 @@ app::i18n_load() {
             MSG_font_applied="应用字体 '%s' 成功。\n"
             MSG_font_reload_warn="更改字体后建议重启 Termux，否则可能会闪退导致丢失数据。\n"
             MSG_open_url_failed="拉起 xdg-open 失败: %s\n"
-            MSG_MENU_repo_change="${_cat1}${_b} 更换软件包源${_faint}（镜像: %s）${_off}"
+            MSG_MENU_repo_change="${_cat1}${_memu_hl} 更换软件包源${_faint}（镜像: %s）${_off}"
             MSG_MENU_repo_change_none="未设置"
             MSG_done="设置完成。\n"
             MSG_install_done="安装完成。使用 hi 启动。\n使用 hi-uninstall 卸载。\n"
@@ -263,22 +297,28 @@ app::i18n_load() {
             MSG_fetching_theme_list="拉取主题列表: %s\n"
             MSG_downloading_theme="下载主题 '%s'...\n"
             MSG_applied_theme="应用主题 '%s' 成功。\n"
-            MSG_MENU_theme_browse="${_cat3}${_b}󰆋 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}"
+            MSG_MENU_theme_browse="${_cat3}${_memu_hl}󰆋 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}"
             MSG_MENU_theme_browse_browser="${_cat3} 在浏览器预览颜色主题${_off}"
             MSG_MENU_theme_quick_dracula="${_cat3} 快捷应用 Dracula+ 主题${_off}"
             MSG_theme_search_prompt="搜索主题 > "
             MSG_fetching_font_list="拉取字体列表: %s\n"
             MSG_font_invalid="无效选择: %s\n"
-            MSG_MENU_font_browse="${_cat2}${_b}󰆋 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}"
+            MSG_MENU_font_browse="${_cat2}${_memu_hl}󰆋 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}"
             MSG_MENU_font_browse_browser="${_cat2} 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}"
             MSG_MENU_font_quick_iosevka="${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}"
             MSG_font_search_prompt="搜索字体 > "
             MSG_fetching_keymap="拉取文件: %s\n"
-            MSG_MENU_keymap_apply="${_cat4}${_b}󰌓 应用实用按键布局${_faint}（miniyu157/Hello-Termux）${_off}"
-            MSG_MENU_resource_switch="${_cat4}󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}"
-            MSG_MENU_install="${_b} 将此程序安装到本地${_off}"
+            MSG_fetching_keymap_list="拉取按键布局列表: %s\n"
+            MSG_downloading_keymap="下载按键布局 '%s'...\n"
+            MSG_applied_keymap="应用按键布局 '%s' 成功。\n"
+            MSG_MENU_keymap_apply="${_cat4}󰌓 快捷应用实用按键布局${_off}"
+            MSG_MENU_keymap_browse="${_cat4}${_memu_hl}󰆋 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}"
+            MSG_MENU_keymap_browse_browser="${_cat4} 在浏览器预览按键布局${_off}"
+            MSG_keymap_search_prompt="搜索按键布局 > "
+            MSG_MENU_resource_switch="󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}"
+            MSG_MENU_install=" 将此程序安装到本地"
             MSG_MENU_cache_clear=" 清除下载缓存"
-            MSG_MENU_lang_switch="${_cat4} 切换语言${_faint}（目前：中文）${_off}"
+            MSG_MENU_lang_switch=" 切换语言${_faint}（目前：中文）${_off}"
             MSG_MENU_quit="󰩈 退出程序"
             MSG_menu_prompt="键入需要的工具回车运行:\n"
             MSG_menu_done=" 工具运行结束，退出码: %s\n"
@@ -291,7 +331,7 @@ app::i18n_load() {
             MSG_font_applied="Font '%s' applied successfully.\n"
             MSG_font_reload_warn="Restart Termux after changing fonts — otherwise it may crash and cause data loss.\n"
             MSG_open_url_failed="Failed to open URL: %s\n"
-            MSG_MENU_repo_change="${_cat1}${_b} Change package mirror${_faint} (mirror: %s)${_off}"
+            MSG_MENU_repo_change="${_cat1}${_memu_hl} Change package mirror${_faint} (mirror: %s)${_off}"
             MSG_MENU_repo_change_none="none"
             MSG_done="Done.\n"
             MSG_install_done="Done. Run 'hi' to start.\nRun 'hi-uninstall' to uninstall.\n"
@@ -302,22 +342,28 @@ app::i18n_load() {
             MSG_fetching_theme_list="Fetching theme list: %s\n"
             MSG_downloading_theme="Downloading theme '%s'...\n"
             MSG_applied_theme="Theme '%s' applied successfully.\n"
-            MSG_MENU_theme_browse="${_cat3}${_b}󰆋 Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"
+            MSG_MENU_theme_browse="${_cat3}${_memu_hl}󰆋 Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"
             MSG_MENU_theme_browse_browser="${_cat3} Preview color themes in browser${_off}"
             MSG_MENU_theme_quick_dracula="${_cat3} Quick-apply Dracula+${_off}"
             MSG_theme_search_prompt="Search themes > "
             MSG_fetching_font_list="Fetching font list: %s\n"
             MSG_font_invalid="Invalid selection: %s\n"
-            MSG_MENU_font_browse="${_cat2}${_b}󰆋 Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"
+            MSG_MENU_font_browse="${_cat2}${_memu_hl}󰆋 Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"
             MSG_MENU_font_browse_browser="${_cat2} Preview fonts in browser${_faint} (programmingfonts.org)${_off}"
             MSG_MENU_font_quick_iosevka="${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"
             MSG_font_search_prompt="Search fonts > "
             MSG_fetching_keymap="Fetching file: %s\n"
-            MSG_MENU_keymap_apply="${_cat4}${_b}󰌓 Apply enhanced key bindings${_faint} (miniyu157/Hello-Termux)${_off}"
-            MSG_MENU_resource_switch="${_cat4}󰛍 Switch resource server${_faint} (current: %s)${_off}"
-            MSG_MENU_install="${_b} Install this program locally${_off}"
+            MSG_fetching_keymap_list="Fetching keymap list: %s\n"
+            MSG_downloading_keymap="Downloading keymap '%s'...\n"
+            MSG_applied_keymap="Keymap '%s' applied successfully.\n"
+            MSG_MENU_keymap_apply="${_cat4}󰌓 Quick-apply enhanced key bindings${_off}"
+            MSG_MENU_keymap_browse="${_cat4}${_memu_hl}󰆋 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"
+            MSG_MENU_keymap_browse_browser="${_cat4} Preview keymaps in browser${_off}"
+            MSG_keymap_search_prompt="Search keymaps > "
+            MSG_MENU_resource_switch="󰛍 Switch resource server${_faint} (current: %s)${_off}"
+            MSG_MENU_install=" Install this program locally"
             MSG_MENU_cache_clear=" Clear download cache"
-            MSG_MENU_lang_switch="${_cat4} Switch Language ${_faint}(Current: English)${_off}"
+            MSG_MENU_lang_switch=" Switch Language${_faint} (Current: English)${_off}"
             MSG_MENU_quit="󰩈 Exit"
             MSG_menu_prompt="Type a key and press Enter to run:\n"
             MSG_menu_done=" Tool finished, exit code: %s\n"
@@ -328,7 +374,7 @@ app::i18n_load() {
 
 # -- init --
 
-declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m'
+declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m'
 
 app::set_lang
 app::i18n_load
@@ -345,7 +391,7 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(1 1a 2 3 3a 3b 4 4a 4b k l s i cl q)
+        menu_keys=(m mc u f fb ff t tb tt k kb kk s l i cl q)
         for _id in "${menu_keys[@]}"; do
             if compgen -A function -- "menu::${_id}::title" > /dev/null; then
                 printf "${_faint}${_italic}%3s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
