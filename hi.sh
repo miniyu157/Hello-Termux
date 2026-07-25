@@ -287,7 +287,7 @@ app::set_lang() { case "$(getprop persist.sys.locale 2> /dev/null)" in zh-*) APP
 app::i18n_load() {
     case "$APP_LANG" in
         zh)
-            MSG_LOOPMENU_prompt="键入需要的工具回车运行:\n"
+            MSG_LOOPMENU_prompt="${_uline}键入需要的工具回车运行:${_off}\n"
             MSG_LOOPMENU_done=" 工具运行结束，退出码: %s\n"
             MSG_LOOPMENU_continue="  按回车键继续..."
 
@@ -313,17 +313,17 @@ app::i18n_load() {
             MSG_font_search_prompt="搜索字体 > "
             MSG_keymap_search_prompt="搜索按键布局 > "
 
-            MSG_MENU_font_browse="${_cat2}${_memu_hl}󰆋 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}"
-            MSG_MENU_font_browse_browser="${_cat2} 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}"
+            MSG_MENU_font_browse="${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}"
+            MSG_MENU_font_browse_browser="${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}"
             MSG_MENU_font_quick="${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}"
 
-            MSG_MENU_theme_browse="${_cat3}${_memu_hl}󰆋 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}"
-            MSG_MENU_theme_browse_browser="${_cat3} 在浏览器预览颜色主题${_off}"
+            MSG_MENU_theme_browse="${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}"
+            MSG_MENU_theme_browse_browser="${_cat3}󰆋 在浏览器预览颜色主题${_off}"
             MSG_MENU_theme_quick="${_cat3} 快捷应用 Dracula+ 主题${_off}"
 
-            MSG_MENU_keymap_browse="${_cat4}${_memu_hl}󰆋 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}"
-            MSG_MENU_keymap_browse_browser="${_cat4} 在浏览器预览按键布局${_off}"
-            MSG_MENU_keymap_quick="${_cat4}󰌓 快捷应用实用按键布局${_off}"
+            MSG_MENU_keymap_browse="${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}"
+            MSG_MENU_keymap_browse_browser="${_cat4}󰆋 在浏览器预览按键布局${_off}"
+            MSG_MENU_keymap_quick="${_cat4} 快捷应用实用按键布局${_off}"
 
             MSG_MENU_resource_switch="󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}"
             MSG_MENU_lang_switch=" 切换语言${_faint}（目前：中文）${_off}"
@@ -337,7 +337,7 @@ app::i18n_load() {
             MSG_MENU_quit="󰩈 退出程序"
             ;;
         *)
-            MSG_LOOPMENU_prompt="Type a key and press Enter to run:\n"
+            MSG_LOOPMENU_prompt="${_uline}Type a key and press Enter to run:${_off}\n"
             MSG_LOOPMENU_done=" Tool finished, exit code: %s\n"
             MSG_LOOPMENU_continue="  Press Enter to continue..."
 
@@ -363,17 +363,17 @@ app::i18n_load() {
             MSG_font_search_prompt="Search fonts > "
             MSG_keymap_search_prompt="Search keymaps > "
 
-            MSG_MENU_font_browse="${_cat2}${_memu_hl}󰆋 Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"
-            MSG_MENU_font_browse_browser="${_cat2} Preview fonts in browser${_faint} (programmingfonts.org)${_off}"
+            MSG_MENU_font_browse="${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"
+            MSG_MENU_font_browse_browser="${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"
             MSG_MENU_font_quick="${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"
 
-            MSG_MENU_theme_browse="${_cat3}${_memu_hl}󰆋 Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"
-            MSG_MENU_theme_browse_browser="${_cat3} Preview color themes in browser${_off}"
+            MSG_MENU_theme_browse="${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"
+            MSG_MENU_theme_browse_browser="${_cat3}󰆋 Preview color themes in browser${_off}"
             MSG_MENU_theme_quick="${_cat3} Quick-apply Dracula+${_off}"
 
-            MSG_MENU_keymap_browse="${_cat4}${_memu_hl}󰆋 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"
-            MSG_MENU_keymap_browse_browser="${_cat4} Preview keymaps in browser${_off}"
-            MSG_MENU_keymap_quick="${_cat4}󰌓 Quick-apply enhanced key bindings${_off}"
+            MSG_MENU_keymap_browse="${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"
+            MSG_MENU_keymap_browse_browser="${_cat4}󰆋 Preview keymaps in browser${_off}"
+            MSG_MENU_keymap_quick="${_cat4} Quick-apply enhanced key bindings${_off}"
 
             MSG_MENU_resource_switch="󰛍 Switch resource server${_faint} (current: %s)${_off}"
             MSG_MENU_lang_switch=" Switch Language${_faint} (Current: English)${_off}"
@@ -391,7 +391,7 @@ app::i18n_load() {
 
 # -- init --
 
-declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m'
+declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m'
 
 app::set_lang
 app::i18n_load
@@ -427,7 +427,9 @@ EOF
     "menu::${choice}"
     _rc=$?
     ((MENU_QUICK)) || {
-        printf "${_ok}>${_off}${MSG_LOOPMENU_done}" "$_rc"
+        _p="$_ok>"
+        ((_rc)) && _p="${_cat1}×"
+        printf "${_p}${_off}${MSG_LOOPMENU_done}" "$_rc"
         printf "$MSG_LOOPMENU_continue"
         read -r _ < /dev/tty
     }
