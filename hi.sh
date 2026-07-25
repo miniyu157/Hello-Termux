@@ -85,10 +85,11 @@ pure::fetch_cached() {
 pure::backup_file() { [[ -f $1 ]] && cp "$1" "${1}.$(date +%Y%m%d%H%M%S).bak"; }
 
 termux::apply_nerd_font() {
-    local font_suffix="$1"
+    local font_suffix="$1" _tmp="${path_termux_font_ttf}.tmp"
     printf "$MSG_font_downloading" "$font_suffix"
     pure::backup_file "$path_termux_font_ttf"
-    curl -#L "${url_nerd_fonts_download_prefix}/${font_suffix}" -o "$path_termux_font_ttf" && {
+    curl -#L "${url_nerd_fonts_download_prefix}/${font_suffix}" -o "$_tmp" &&
+        mv "$_tmp" "$path_termux_font_ttf" && {
         termux-reload-settings
         printf "$MSG_font_applied" "$font_suffix"
         printf "$MSG_font_reload_warn"
