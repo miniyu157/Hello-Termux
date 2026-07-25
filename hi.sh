@@ -7,7 +7,7 @@ app::set_resource_service() {
     case "$service" in
         cdn.jsdelivr.net)
             app_resource_service="cdn.jsdelivr.net"
-            url_ht_properties="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/termux.properties"
+            url_ht_properties="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymaps/enhanced.properties"
             url_ht_theme_text="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/theme_list.txt"
             url_iterm2_color_schemes_prefix="https://cdn.jsdelivr.net/gh/mbadolato/iTerm2-Color-Schemes@master/termux"
             url_ht_font_text="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/font_list.txt"
@@ -16,7 +16,7 @@ app::set_resource_service() {
             ;;
         github.com)
             app_resource_service="github.com"
-            url_ht_properties="https://github.com/miniyu157/hello-termux/raw/main/termux.properties"
+            url_ht_properties="https://github.com/miniyu157/hello-termux/raw/main/keymaps/enhanced.properties"
             url_ht_theme_text="https://github.com/miniyu157/hello-termux/raw/main/theme_list.txt"
             url_iterm2_color_schemes_prefix="https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/master/termux"
             url_ht_font_text="https://github.com/miniyu157/hello-termux/raw/main/font_list.txt"
@@ -25,7 +25,7 @@ app::set_resource_service() {
             ;;
         cdn.statically.io)
             app_resource_service="cdn.statically.io"
-            url_ht_properties="https://cdn.statically.io/gh/miniyu157/hello-termux/main/termux.properties"
+            url_ht_properties="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymaps/enhanced.properties"
             url_ht_theme_text="https://cdn.statically.io/gh/miniyu157/hello-termux/main/theme_list.txt"
             url_iterm2_color_schemes_prefix="https://cdn.statically.io/gh/mbadolato/iTerm2-Color-Schemes/master/termux"
             url_ht_font_text="https://cdn.statically.io/gh/miniyu157/hello-termux/main/font_list.txt"
