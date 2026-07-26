@@ -6,7 +6,7 @@ app::set_resource_service() {
     local service="$1"
     case "$service" in
         cdn.jsdelivr.net)
-            app_resource_service="cdn.jsdelivr.net"
+            APP_RESOURCE_SERVICE="cdn.jsdelivr.net"
             URL_theme_list="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/theme_list.txt"
             URL_theme_prefix="https://cdn.jsdelivr.net/gh/mbadolato/iTerm2-Color-Schemes@master/termux"
             URL_font_list="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/font_list.txt"
@@ -17,7 +17,7 @@ app::set_resource_service() {
             URL_shell_cells="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/shell_cells/"
             ;;
         github.com)
-            app_resource_service="github.com"
+            APP_RESOURCE_SERVICE="github.com"
             URL_theme_list="https://github.com/miniyu157/hello-termux/raw/main/theme_list.txt"
             URL_theme_prefix="https://raw.githubusercontent.com/mbadolato/iTerm2-Color-Schemes/master/termux"
             URL_font_list="https://github.com/miniyu157/hello-termux/raw/main/font_list.txt"
@@ -28,7 +28,7 @@ app::set_resource_service() {
             URL_shell_cells="https://github.com/miniyu157/hello-termux/raw/main/shell_cells/"
             ;;
         cdn.statically.io)
-            app_resource_service="cdn.statically.io"
+            APP_RESOURCE_SERVICE="cdn.statically.io"
             URL_theme_list="https://cdn.statically.io/gh/miniyu157/hello-termux/main/theme_list.txt"
             URL_theme_prefix="https://cdn.statically.io/gh/mbadolato/iTerm2-Color-Schemes/master/termux"
             URL_font_list="https://cdn.statically.io/gh/miniyu157/hello-termux/main/font_list.txt"
@@ -102,8 +102,7 @@ pure::cache_resource() {
 
 # Swap two files
 pure::swap_file() {
-    local a="$1" b="$2" tmp
-    tmp=$(mktemp "$path_termux_tmp/ht_XXXXX") || return 1
+    local a="$1" b="$2" tmp=$(mktemp "$path_termux_tmp/ht_XXXXX")
     mv "$a" "$tmp" && mv "$b" "$a" && mv "$tmp" "$b"
 }
 
@@ -247,7 +246,7 @@ menu::kk::title() { i18n::printf "${_cat4} 快捷应用实用按键布局${_o
 
 menu::fish() {
     app::set_deps fish || return 1
-    chsh -s fish && i18n::printf "${_ok}>${_off} 已更改 shell 配置，使用以下操作均可查看效果：\n- 开启新会话\n- 重启终端应用\n- 运行 '${_hl}exec %s${_off}'\n" "${_ok}>${_off} Shell configuration changed. To see the effect:\n- Start a new session\n- Restart the terminal app\n- Run '${_hl}exec %s${_off}'\n" fish
+    chsh -s fish && i18n_msg::shell_changed fish
 }
 menu::fish::title() { i18n::printf "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_off}"; }
 
@@ -263,8 +262,8 @@ menu::ffff::title() { i18n::printf "${_green}󰻳 为 fish 安装 fisher 插件$
 menu::eza() {
     app::set_deps eza gum || return 1
 
-    local shell
-    shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "eza")" bash fish) || {
+    local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "eza")" bash fish)
+    [[ -n $shell ]] || {
         MENU_QUICK=1
         return 1
     }
@@ -284,8 +283,7 @@ menu::eza() {
         fish) config="$HOME/.config/fish/conf.d/config.fish" ;;
     esac
 
-    local first="# -- eza alias {{ --"
-    local last="# -- }} eza alias --"
+    local first="# -- eza alias {{ --" last="# -- }} eza alias --"
 
     if [[ -f $config ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
         i18n::printf "已有配置，未修改。\n" "Already configured, no changes.\n"
@@ -294,12 +292,9 @@ menu::eza() {
 
     mkdir -p "$(dirname "$config")"
 
-    local tmp
-    tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp") || return 1
+    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
 
-    if [[ -f $config ]]; then
-        cat "$config" > "$tmp"
-    fi
+    [[ -f $config ]] && cp "$config" "$tmp"
     [[ -s $tmp ]] && echo >> "$tmp"
     printf '%s\n' "$content" >> "$tmp"
 
@@ -320,19 +315,19 @@ menu::eza() {
         mv "$tmp" "$config"
         i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
     fi
-    i18n::printf "${_ok}>${_off} 已更改 shell 配置，使用以下操作均可查看效果：\n- 开启新会话\n- 重启终端应用\n- 运行 '${_hl}exec %s${_off}'\n" "${_ok}>${_off} Shell configuration changed. To see the effect:\n- Start a new session\n- Restart the terminal app\n- Run '${_hl}exec %s${_off}'\n" "$shell"
+    i18n_msg::shell_changed "$shell"
 }
 menu::eza::title() { i18n::printf "${_green} 安装 eza，并为 bash/fish 配置实用别名${_off}" "${_green} Install eza and configure aliases for bash/fish${_off}"; }
 
 menu::s() {
-    case "$app_resource_service" in
+    case "$APP_RESOURCE_SERVICE" in
         cdn.jsdelivr.net) app::set_resource_service github.com ;;
         github.com) app::set_resource_service cdn.statically.io ;;
         cdn.statically.io) app::set_resource_service cdn.jsdelivr.net ;;
     esac
     MENU_QUICK=1
 }
-menu::s::title() { i18n::printf "󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}" "󰛍 Switch resource server${_faint} (current: %s)${_off}" "$app_resource_service"; }
+menu::s::title() { i18n::printf "󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}" "󰛍 Switch resource server${_faint} (current: %s)${_off}" "$APP_RESOURCE_SERVICE"; }
 
 menu::i() {
     i18n::printf "拉取文件: %s\n" "Fetching file: %s\n" "$URL_exe"
@@ -386,12 +381,13 @@ i18n::printf() {
     printf -- "$fmt" "${@:3}"
 }
 
+i18n_msg::shell_changed() { i18n::printf "${_ok}>${_off} 已更改 shell 配置，使用以下操作均可查看效果：\n- 开启新会话\n- 重启终端应用\n- 运行 '${_hl}exec %s${_off}'\n" "${_ok}>${_off} Shell configuration changed. To see the effect:\n- Start a new session\n- Restart the terminal app\n- Run '${_hl}exec %s${_off}'\n" "$1"; }
+
 # -- init --
 
 declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m'
 
 app::set_lang
-
 app::set_paths
 app::set_resource_service github.com
 
@@ -404,7 +400,7 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(m mc u f fb ff t tb tt k kb kk fish eza ffff s l i cl is gh q)
+        menu_keys=(m mc u f fb ff t tb tt k kb kk fish ffff eza s l i cl is gh q)
         for _id in "${menu_keys[@]}"; do
             printf "${_faint}${_italic}%4s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
         done
