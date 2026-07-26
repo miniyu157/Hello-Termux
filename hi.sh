@@ -14,6 +14,7 @@ app::set_resource_service() {
             URL_keymap_list="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymap_list.txt"
             URL_keymap_prefix="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/keymaps"
             URL_exe="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/hi.sh"
+            URL_shell_cells="https://cdn.jsdelivr.net/gh/miniyu157/hello-termux@main/shell_cells/"
             ;;
         github.com)
             app_resource_service="github.com"
@@ -24,6 +25,7 @@ app::set_resource_service() {
             URL_keymap_list="https://github.com/miniyu157/hello-termux/raw/main/keymap_list.txt"
             URL_keymap_prefix="https://github.com/miniyu157/hello-termux/raw/main/keymaps"
             URL_exe="https://github.com/miniyu157/hello-termux/raw/main/hi.sh"
+            URL_shell_cells="https://github.com/miniyu157/hello-termux/raw/main/shell_cells/"
             ;;
         cdn.statically.io)
             app_resource_service="cdn.statically.io"
@@ -34,6 +36,7 @@ app::set_resource_service() {
             URL_keymap_list="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymap_list.txt"
             URL_keymap_prefix="https://cdn.statically.io/gh/miniyu157/hello-termux/main/keymaps"
             URL_exe="https://cdn.statically.io/gh/miniyu157/hello-termux/main/hi.sh"
+            URL_shell_cells="https://cdn.statically.io/gh/miniyu157/hello-termux/main/shell_cells/"
             ;;
     esac
 }
@@ -56,6 +59,8 @@ app::set_paths() {
     path_cache_fonts="$HOME/.termux/cache/fonts"
     path_cache_keymaps="$HOME/.termux/cache/keymaps"
 
+    path_termux_tmp="$PREFIX/tmp"
+
     path_install_bin="$PREFIX/bin/hi"
     path_uninstall_bin="$PREFIX/bin/hi-uninstall"
 
@@ -76,14 +81,14 @@ app::set_deps() {
 }
 
 pure::fetch_cached() {
-    local -n _out="$1"
-    local _cache="$2" _url="$3" _ttl="${4:-30}"
+    local -n _ref_out="$1"
+    local cache="$2" url="$3" ttl="${4:-30}"
 
-    if [[ -s $_cache ]] && [[ -z $(find "$_cache" -mtime "+$_ttl" 2> /dev/null) ]]; then
-        _out=$(< "$_cache")
+    if [[ -s $cache ]] && [[ -z $(find "$cache" -mtime "+$ttl" 2> /dev/null) ]]; then
+        _ref_out=$(< "$cache")
     else
-        _out=$(curl -#L "$_url") || return 1
-        printf '%s\n' "$_out" > "$_cache"
+        _ref_out=$(curl -#L "$url") || return 1
+        printf '%s\n' "$_ref_out" > "$cache"
     fi
 }
 
@@ -93,6 +98,13 @@ pure::cache_resource() {
     [[ -f $dest ]] && return 0
     mkdir -p "$(dirname "$dest")"
     curl -#L "$url" -o "${dest}.tmp" && mv "${dest}.tmp" "$dest"
+}
+
+# Swap two files
+pure::swap_file() {
+    local a="$1" b="$2" tmp
+    tmp=$(mktemp "$path_termux_tmp/ht_XXXXX") || return 1
+    mv "$a" "$tmp" && mv "$b" "$a" && mv "$tmp" "$b"
 }
 
 # 应用一个 nerd font 字体
@@ -147,10 +159,10 @@ menu::mc::title() { printf "$MSG_MENU_repo_quick_china"; }
 
 menu::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
 menu::u::title() {
-    local _ts=$(find "$path_termux_apt_lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
-    local _date
-    [[ -n $_ts ]] && _date=$(date -d "@$_ts" +'%Y-%m-%d %H:%M:%S' 2> /dev/null)
-    printf "$MSG_MENU_pkg_update" "${_date:-$MSG_MENU_pkg_update_none}"
+    local ts=$(find "$path_termux_apt_lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
+    local date
+    [[ -n $ts ]] && date=$(date -d "@$ts" +'%Y-%m-%d %H:%M:%S' 2> /dev/null)
+    printf "$MSG_MENU_pkg_update" "${date:-$MSG_MENU_pkg_update_none}"
 }
 
 menu::t() {
@@ -226,6 +238,85 @@ menu::kb::title() { printf "$MSG_MENU_keymap_browse_browser"; }
 
 menu::kk() { termux::apply_keymap "Enhanced.properties"; }
 menu::kk::title() { printf "$MSG_MENU_keymap_quick"; }
+
+menu::fish() {
+    app::set_deps fish || return 1
+    chsh -s fish && printf "$MSG_shell_changed" fish
+}
+menu::fish::title() { printf "$MSG_MENU_fish_setup"; }
+
+menu::ffff() {
+    local fisher_func="$HOME/.config/fish/functions/fisher.fish"
+    if [[ ! -f "$fisher_func" ]]; then
+        fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher" || return 1
+    fi
+    printf "$MSG_fisher_installed"
+}
+menu::ffff::title() { printf "$MSG_MENU_fisher_setup"; }
+
+menu::eza() {
+    app::set_deps eza gum || return 1
+
+    local shell
+    shell=$(gum choose --header="$(printf "$MSG_choose_shell_for" "eza")" bash fish) || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    local remote="${URL_shell_cells}eza_alias.${shell}"
+    local cache="$path_cache_dir/eza_alias_${shell}"
+
+    local content
+    pure::fetch_cached content "$cache" "$remote" || {
+        printf "$MSG_fetch_failed" "$remote"
+        return 1
+    }
+
+    local config
+    case "$shell" in
+        bash) config="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/config.fish" ;;
+    esac
+
+    local first="# -- eza alias {{ --"
+    local last="# -- }} eza alias --"
+
+    if [[ -f "$config" ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
+        printf "$MSG_already_configured"
+        return 0
+    fi
+
+    mkdir -p "$(dirname "$config")"
+
+    local tmp
+    tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp") || return 1
+
+    if [[ -f "$config" ]]; then
+        cat "$config" > "$tmp"
+    fi
+    [[ -s "$tmp" ]] && echo >> "$tmp"
+    printf '%s\n' "$content" >> "$tmp"
+
+    local src="$config"
+    [[ -f "$config" ]] || src=/dev/null
+    diff --color=always -u "$src" "$tmp" 2>/dev/null || true
+
+    gum confirm "$MSG_accept_changes" || {
+        rm -f "$tmp"
+        MENU_QUICK=1
+        return 1
+    }
+
+    if [[ -f "$config" ]]; then
+        pure::swap_file "$tmp" "$config"
+        printf "$MSG_backup_config_path" "$tmp"
+    else
+        mv "$tmp" "$config"
+        printf "$MSG_file_created" "$config"
+    fi
+    printf "$MSG_shell_changed" "$shell"
+}
+menu::eza::title() { printf "$MSG_MENU_eza_setup"; }
 
 menu::s() {
     case "$app_resource_service" in
@@ -325,6 +416,18 @@ app::i18n_load() {
             MSG_MENU_keymap_browse_browser="${_cat4}󰆋 在浏览器预览按键布局${_off}"
             MSG_MENU_keymap_quick="${_cat4} 快捷应用实用按键布局${_off}"
 
+            MSG_choose_shell_for="需要为哪个 shell 设置 %s？"
+            MSG_MENU_eza_setup="${_green} 配置 eza 和实用别名${_off}"
+            MSG_already_configured="已有配置，未修改。\n"
+            MSG_accept_changes="是否接受以上更改？"
+            MSG_backup_config_path="修改前的配置位于 %s\n"
+            MSG_file_created="已新建文件: %s\n"
+
+            MSG_MENU_fish_setup="${_green}${_memu_hl} 设置终端自动补全 -- fish${_off}"
+            MSG_MENU_fisher_setup="${_green}󰻳 为 fish 安装 fisher 插件${_off}"
+            MSG_fisher_installed="已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以卸载自身。\n\n推荐:\n- 智能补全插件 gazorby/fifc\n- 优秀主题 IlanCosman/tide@v6\n\n探索开源社区以了解更多信息！\n"
+            MSG_shell_changed="${_ok}>${_off} 已更改 shell 配置，使用以下操作均可查看效果：\n- 开启新会话\n- 重启终端应用\n- 运行 '${_hl}exec %s${_off}'\n"
+
             MSG_MENU_resource_switch="󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}"
             MSG_MENU_lang_switch=" 切换语言${_faint}（目前：中文）${_off}"
             MSG_MENU_install=" 将此程序安装到本地"
@@ -375,6 +478,18 @@ app::i18n_load() {
             MSG_MENU_keymap_browse_browser="${_cat4}󰆋 Preview keymaps in browser${_off}"
             MSG_MENU_keymap_quick="${_cat4} Quick-apply enhanced key bindings${_off}"
 
+            MSG_choose_shell_for="Which shell to configure for %s?"
+            MSG_MENU_eza_setup="${_green} Configure eza and useful aliases${_off}"
+            MSG_already_configured="Already configured, no changes.\n"
+            MSG_accept_changes="Accept the above changes?"
+            MSG_backup_config_path="Previous config saved at %s\n"
+            MSG_file_created="Created new file: %s\n"
+
+            MSG_MENU_fish_setup="${_green}${_memu_hl} Set up terminal autocomplete -- fish${_off}"
+            MSG_MENU_fisher_setup="${_green}󰻳 Install fisher plugin manager for fish${_off}"
+            MSG_fisher_installed="fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n\nRecommended:\n- gazorby/fifc — smart completions\n- IlanCosman/tide@v6 — a beautiful prompt\n\nExplore the community for more!\n"
+            MSG_shell_changed="${_ok}>${_off} Shell configuration changed. To see the effect:\n- Start a new session\n- Restart the terminal app\n- Run '${_hl}exec %s${_off}'\n"
+
             MSG_MENU_resource_switch="󰛍 Switch resource server${_faint} (current: %s)${_off}"
             MSG_MENU_lang_switch=" Switch Language${_faint} (Current: English)${_off}"
             MSG_MENU_install=" Install this program locally"
@@ -391,7 +506,7 @@ app::i18n_load() {
 
 # -- init --
 
-declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m'
+declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m'
 
 app::set_lang
 app::i18n_load
@@ -408,9 +523,9 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(m mc u f fb ff t tb tt k kb kk s l i cl is gh q)
+        menu_keys=(m mc u f fb ff t tb tt k kb kk fish eza ffff s l i cl is gh q)
         for _id in "${menu_keys[@]}"; do
-            printf "${_faint}${_italic}%3s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
+            printf "${_faint}${_italic}%4s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
         done
     )
 ${_faint}─────────────────────────────────────────────────${_off}
