@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC1036,SC1088,SC2155,SC2059
+# shellcheck disable=SC1036,SC1088,SC2155,SC2059,SC2016
 
 app::set_resource_service() {
     local service="$1"
@@ -507,16 +507,125 @@ app::set_resource_service github.com
 
 # -- loop menu --
 
-while true; do
-    cat << EOF
+# # -- example group: g --
+# menu::g() { i18n::printf "📁 示例分组" "📁 Example Group"; }
+
+# menu::g::a() {
+#     i18n::printf "执行了 g::a — 这是一个快速操作\n" "Executed g::a — this is a quick action\n"
+#     MENU_QUICK=1
+# }
+# menu::g::a::title() { i18n::printf "选项 A - 快速操作" "Option A - Quick Action"; }
+
+# menu::g::b() { i18n::printf "执行了 g::b — 这是一个普通操作\n" "Executed g::b — this is a normal action\n"; }
+# menu::g::b::title() { i18n::printf "选项 B - 普通操作" "Option B - Normal Action"; }
+
+# menu::g::c() {
+#     i18n::printf "执行了 g::c — 这是另一个快速操作\n" "Executed g::c — another quick action\n"
+#     MENU_QUICK=1
+# }
+# menu::g::c::title() { i18n::printf "选项 C - 又一个快速操作" "Option C - Another Quick Action"; }
+
+# menu::g::d() {
+#     i18n::printf "执行了 g::d — 这是一个会失败的操作\n" "Executed g::d — this one fails\n"
+#     return 1
+# }
+# menu::g::d::title() { i18n::printf "选项 D - 失败操作（退出码 1）" "Option D - Failure (exit code 1)"; }
+
+# menu::g::e() {
+#     i18n::printf "执行了 g::e — 多重失败\n" "Executed g::e — multiple failures\n"
+#     return 2
+# }
+# menu::g::e::title() { i18n::printf "选项 E - 严重失败（退出码 2）" "Option E - Critical failure (exit code 2)"; }
+
+# menu::g::f() {
+#     i18n::printf "执行了 g::f — 失败但快速返回\n" "Executed g::f — fails but quick return\n"
+#     MENU_QUICK=1
+#     return 3
+# }
+# menu::g::f::title() { i18n::printf "选项 F - 快速失败（退出码 3）" "Option F - Quick failure (exit code 3)"; }
+
+# # -- edge-case groups --
+
+# # 空成员组：子菜单内只有标题和分隔线，无任何选项
+# menu::empty() { i18n::printf "🕳 空组（无成员）" "🕳 Empty group (no members)"; }
+
+# # 边界情况组：成员缺少 title / 缺少 action
+# menu::edge() { i18n::printf "⚠ 边界测试" "⚠ Edge Cases"; }
+
+# menu::edge::x() {
+#     i18n::printf "x 执行成功（无 title 函数）\n" "x executed (no title func)\n"
+#     MENU_QUICK=1
+# }
+# # menu::edge::x::title 故意不定义 — 测试缺 title 时的渲染
+
+# # menu::edge::y 故意不定义 — 测试缺 action 时的分发
+# menu::edge::y::title() { i18n::printf "选项 Y - 无动作函数" "Option Y - No action func"; }
+
+# menu::edge::z() { i18n::printf "z 正常执行\n" "z executed normally\n"; }
+# menu::edge::z::title() { i18n::printf "选项 Z - 正常对照" "Option Z - Normal control"; }
+
+# 子菜单：渲染组的成员列表，处理组成员分发
+# $1        组名（同时也是组标题函数名）
+# $2 $3 …   组成员名列表
+app::submenu() {
+    local group_name="$1"
+    shift
+    local -a members=("$@")
+
+    while true; do
+        cat << EOF
 ${_refresh}
+${_b}  ✦ $("menu::${group_name}" 2> /dev/null) ✦ ${_off}
+─────────────────────────────────────────────────
+$(
+            for m in "${members[@]}"; do
+                printf "${_faint}${_italic}%4s${_off} %s\n" "$m" "$("menu::${group_name}::${m}::title" 2> /dev/null)"
+            done
+        )
+${_faint}─────────────────────────────────────────────────${_off}
+EOF
+        i18n::printf "${_uline}键入选项或留空返回:${_off}\n" "${_uline}Type a choice or leave empty to go back:${_off}\n"
+        read -e -r choice < /dev/tty || {
+            printf "\n"
+            return
+        }
+        [[ -z $choice ]] && return
+
+        compgen -A function -- "menu::${group_name}::${choice}" | grep -qx "menu::${group_name}::${choice}" || continue
+
+        history -s -- "$choice"
+        MENU_QUICK=0
+        "menu::${group_name}::${choice}"
+        local _rc=$?
+        ((MENU_QUICK)) || {
+            local _p="$_ok>"
+            ((_rc)) && _p="${_cat1}×"
+            i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
+            i18n::printf "  按回车键继续..." "  Press Enter to continue..."
+            read -r _ < /dev/tty
+        }
+    done
+}
+
+# 添加测试
+# menu_keys=(m mc "g(a b c d e f)" "empty()" "edge(x y z)" "undef(a b)" "bad)" undef_item u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
+
+menu_keys=(m mc u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
+
+while true; do
+    printf '%s' "${_refresh}"
+    cat << EOF
 ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(m mc u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
         for _id in "${menu_keys[@]}"; do
-            printf "${_faint}${_italic}%4s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
+            if [[ $_id =~ ^[^()]+\([^()]*\)$ ]]; then
+                _gname="${_id%%(*}"
+                printf "${_faint}${_italic}%4s${_off} %s\n" "$_gname" "$("menu::$_gname" 2> /dev/null)"
+            else
+                printf "${_faint}${_italic}%4s${_off} %s\n" "$_id" "$("menu::${_id}::title" 2> /dev/null)"
+            fi
         done
     )
 ${_faint}─────────────────────────────────────────────────${_off}
@@ -527,6 +636,29 @@ EOF
         exit 0
     }
     [[ -z $choice ]] && continue
+
+    # 检查输入是否为组名 → 进入子菜单
+    _is_group=0
+    for _item in "${menu_keys[@]}"; do
+        if [[ $_item =~ ^[^()]+\([^()]*\)$ ]]; then
+            _gname="${_item%%(*}"
+            if [[ $choice == "$_gname" ]]; then
+                _members="${_item#*(}"
+                _members="${_members%)*}"
+                _is_group=1
+                break
+            fi
+        fi
+    done
+    if ((_is_group)); then
+        if compgen -A function -- "menu::$_gname" | grep -qx "menu::$_gname"; then
+            # shellcheck disable=SC2206
+            _members_arr=($_members)
+            app::submenu "$_gname" "${_members_arr[@]}"
+        fi
+        continue
+    fi
+
     compgen -A function -- "menu::${choice}" | grep -qx "menu::${choice}" || continue
     history -s -- "$choice"
     MENU_QUICK=0
