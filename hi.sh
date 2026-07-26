@@ -417,13 +417,13 @@ app::i18n_load() {
             MSG_MENU_keymap_quick="${_cat4} 快捷应用实用按键布局${_off}"
 
             MSG_choose_shell_for="需要为哪个 shell 设置 %s？"
-            MSG_MENU_eza_setup="${_green} 配置 eza 和实用别名${_off}"
+            MSG_MENU_eza_setup="${_green} 安装 eza，并为 bash/fish 配置实用别名${_off}"
             MSG_already_configured="已有配置，未修改。\n"
             MSG_accept_changes="是否接受以上更改？"
             MSG_backup_config_path="修改前的配置位于 %s\n"
             MSG_file_created="已新建文件: %s\n"
 
-            MSG_MENU_fish_setup="${_green}${_memu_hl} 设置终端自动补全 -- fish${_off}"
+            MSG_MENU_fish_setup="${_green}${_memu_hl} 安装友好交互的 Shell - fish${_off}"
             MSG_MENU_fisher_setup="${_green}󰻳 为 fish 安装 fisher 插件${_off}"
             MSG_fisher_installed="已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以卸载自身。\n\n推荐:\n- 智能补全插件 gazorby/fifc\n- 优秀主题 IlanCosman/tide@v6\n\n探索开源社区以了解更多信息！\n"
             MSG_shell_changed="${_ok}>${_off} 已更改 shell 配置，使用以下操作均可查看效果：\n- 开启新会话\n- 重启终端应用\n- 运行 '${_hl}exec %s${_off}'\n"
@@ -479,13 +479,13 @@ app::i18n_load() {
             MSG_MENU_keymap_quick="${_cat4} Quick-apply enhanced key bindings${_off}"
 
             MSG_choose_shell_for="Which shell to configure for %s?"
-            MSG_MENU_eza_setup="${_green} Configure eza and useful aliases${_off}"
+            MSG_MENU_eza_setup="${_green} Install eza and configure aliases for bash/fish${_off}"
             MSG_already_configured="Already configured, no changes.\n"
             MSG_accept_changes="Accept the above changes?"
             MSG_backup_config_path="Previous config saved at %s\n"
             MSG_file_created="Created new file: %s\n"
 
-            MSG_MENU_fish_setup="${_green}${_memu_hl} Set up terminal autocomplete -- fish${_off}"
+            MSG_MENU_fish_setup="${_green}${_memu_hl} Install the friendly interactive shell — fish${_off}"
             MSG_MENU_fisher_setup="${_green}󰻳 Install fisher plugin manager for fish${_off}"
             MSG_fisher_installed="fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n\nRecommended:\n- gazorby/fifc — smart completions\n- IlanCosman/tide@v6 — a beautiful prompt\n\nExplore the community for more!\n"
             MSG_shell_changed="${_ok}>${_off} Shell configuration changed. To see the effect:\n- Start a new session\n- Restart the terminal app\n- Run '${_hl}exec %s${_off}'\n"
