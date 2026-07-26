@@ -280,7 +280,7 @@ menu::eza() {
     local config
     case "$shell" in
         bash) config="$HOME/.bashrc" ;;
-        fish) config="$HOME/.config/fish/conf.d/config.fish" ;;
+        fish) config="$HOME/.config/fish/conf.d/eza_alias.fish" ;;
     esac
 
     local first="# -- eza alias {{ --" last="# -- }} eza alias --"
@@ -317,7 +317,121 @@ menu::eza() {
     fi
     i18n_msg::shell_changed "$shell"
 }
-menu::eza::title() { i18n::printf "${_green} 安装 eza，并为 bash/fish 配置实用别名${_off}" "${_green} Install eza and configure aliases for bash/fish${_off}"; }
+menu::eza::title() { i18n::printf "${_purple} 安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple} Install eza and configure aliases for bash/fish${_off}"; }
+
+menu::zox() {
+    app::set_deps zoxide gum || return 1
+
+    local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "zoxide")" bash fish)
+    [[ -n $shell ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    local config
+    case "$shell" in
+        bash) config="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/zoxide.fish" ;;
+    esac
+
+    local first="# -- zoxide init {{ --" last="# -- }} zoxide init --"
+
+    if [[ -f $config ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
+        i18n::printf "已有配置，未修改。\n" "Already configured, no changes.\n"
+        return 0
+    fi
+
+    local content
+    case "$shell" in
+        bash) content=$(printf '%s\n%s\n%s' "$first" 'eval "$(zoxide init bash)"' "$last") ;;
+        fish) content=$(printf '%s\n%s\n    %s\n%s\n%s' "$first" 'if status is-interactive' 'zoxide init fish | source' 'end' "$last") ;;
+    esac
+
+    mkdir -p "$(dirname "$config")"
+
+    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
+
+    [[ -f $config ]] && cp "$config" "$tmp"
+    [[ -s $tmp ]] && echo >> "$tmp"
+    printf '%s\n' "$content" >> "$tmp"
+
+    local src="$config"
+    [[ -f $config ]] || src=/dev/null
+    diff --color=always -u "$src" "$tmp" 2> /dev/null || true
+
+    gum confirm "$(i18n::printf "是否接受以上更改？" "Accept the above changes?")" || {
+        rm -f "$tmp"
+        MENU_QUICK=1
+        return 1
+    }
+
+    if [[ -f $config ]]; then
+        pure::swap_file "$tmp" "$config"
+        i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
+    else
+        mv "$tmp" "$config"
+        i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
+    fi
+    i18n_msg::shell_changed "$shell"
+}
+menu::zox::title() { i18n::printf "${_purple} 安装配置 zoxide${_off}" "${_purple} Install and configure zoxide${_off}"; }
+
+menu::atu() {
+    app::set_deps atuin gum || return 1
+
+    local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "atuin")" bash fish)
+    [[ -n $shell ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    local config
+    case "$shell" in
+        bash) config="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/atuin.fish" ;;
+    esac
+
+    local first="# -- atuin init {{ --" last="# -- }} atuin init --"
+
+    if [[ -f $config ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
+        i18n::printf "已有配置，未修改。\n" "Already configured, no changes.\n"
+        return 0
+    fi
+
+    local content
+    case "$shell" in
+        bash) content=$(printf '%s\n%s\n%s' "$first" 'eval "$(atuin init bash --disable-up-arrow)"' "$last") ;;
+        fish) content=$(printf '%s\n%s\n    %s\n%s\n%s' "$first" 'if status is-interactive' 'atuin init fish --disable-up-arrow | source' 'end' "$last") ;;
+    esac
+
+    mkdir -p "$(dirname "$config")"
+
+    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
+
+    [[ -f $config ]] && cp "$config" "$tmp"
+    [[ -s $tmp ]] && echo >> "$tmp"
+    printf '%s\n' "$content" >> "$tmp"
+
+    local src="$config"
+    [[ -f $config ]] || src=/dev/null
+    diff --color=always -u "$src" "$tmp" 2> /dev/null || true
+
+    gum confirm "$(i18n::printf "是否接受以上更改？" "Accept the above changes?")" || {
+        rm -f "$tmp"
+        MENU_QUICK=1
+        return 1
+    }
+
+    if [[ -f $config ]]; then
+        pure::swap_file "$tmp" "$config"
+        i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
+    else
+        mv "$tmp" "$config"
+        i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
+    fi
+    i18n_msg::shell_changed "$shell"
+}
+menu::atu::title() { i18n::printf "${_purple} 安装配置 atuin${_off}" "${_purple} Install and configure atuin${_off}"; }
 
 menu::s() {
     case "$APP_RESOURCE_SERVICE" in
@@ -385,7 +499,7 @@ i18n_msg::shell_changed() { i18n::printf "${_ok}>${_off} 已更改 shell 配置�
 
 # -- init --
 
-declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m'
+declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m'
 
 app::set_lang
 app::set_paths
@@ -400,7 +514,7 @@ ${_b}  ✦ Hello Termux ✦ ${_off}
 ${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
 ─────────────────────────────────────────────────
 $(
-        menu_keys=(m mc u f fb ff t tb tt k kb kk fish ffff eza s l i cl is gh q)
+        menu_keys=(m mc u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
         for _id in "${menu_keys[@]}"; do
             printf "${_faint}${_italic}%4s${_off} %s\n" "$_id" "$("menu::${_id}::title")"
         done
