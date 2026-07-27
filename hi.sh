@@ -290,14 +290,14 @@ menu::fish::title() { i18n::printf "${_green}${_memu_hl} 安装友好交互�
 
 menu::ffff() { i18n::printf "${_green}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}󰻳 About fish's fisher plugins${_off}"; }
 
-menu::ffff::ffff() {
+menu::ffff::f() {
     local fisher_func="$HOME/.config/fish/functions/fisher.fish"
     if [[ ! -f $fisher_func ]]; then
         fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher" || return 1
     fi
     i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以用于卸载自身。\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n"
 }
-menu::ffff::ffff::title() { i18n::printf "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "jorgebucaran/fisher")"; }
+menu::ffff::f::title() { i18n::printf "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "jorgebucaran/fisher")"; }
 
 menu::ffff::a() { fish -c "fisher install gazorby/fifc"; }
 menu::ffff::a::title() { i18n::printf "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "gazorby/fifc")"; }
@@ -665,7 +665,7 @@ EOF
 # 添加测试
 # menu_keys=(m mc "g(a b c d e f)" "empty()" "edge(x y z)" "undef(a b)" "bad)" undef_item u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
 
-menu_keys=(m mc u f fb ff t tb tt k kb kk fish "ffff(ffff a b)" eza zox atu s l i cl is gh q)
+menu_keys=(m mc u f fb ff t tb tt k kb kk fish "ffff(f a b)" eza zox atu s l i cl is gh q)
 
 while true; do
     printf '%s' "${_refresh}"
