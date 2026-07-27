@@ -229,15 +229,7 @@ menu::root::mc() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_ter
 menu::root::mc::title() { i18n::printf -v "$1" "${_cat1} 快捷设置中国大陆软件源${_off}" "${_cat1} Quick-set Chinese mainland mirror${_off}"; }
 
 menu::root::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
-menu::root::u::title() {
-    local ts=$(find "$path_termux_apt_lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
-    local date
-    [[ -n $ts ]] && date=$(date -d "@$ts" +'%Y-%m-%d %H:%M:%S' 2> /dev/null)
-    i18n::printf -v "$1" \
-        "${_cat1}󰏕 更新和升级软件包${_faint}（上次更新: %s）${_off}" \
-        "${_cat1}󰏕 Update and upgrade packages${_faint} (last update: %s)${_off}" \
-        "${date:-$(i18n::printf "无" "none")}"
-}
+menu::root::u::title() { i18n::printf -v "$1" "${_cat1}󰏕 更新和升级软件包${_off}" "${_cat1}󰏕 Update and upgrade packages${_off}"; }
 
 menu::root::t() {
     app::set_deps fzf || return 1
@@ -344,10 +336,11 @@ pure::fisher_plugin_status() {
 # 获取命令是否可用的 i18n 状态文本
 # $1  命令名
 pure::command_status() {
+    local _v="${2:-}"
     if command -v "$1" > /dev/null 2>&1; then
-        i18n::printf "已安装" "installed"
+        i18n::printf ${_v:+-v "$_v"} "已安装" "installed"
     else
-        i18n::printf "未安装" "not installed"
+        i18n::printf ${_v:+-v "$_v"} "未安装" "not installed"
     fi
 }
 
@@ -355,7 +348,11 @@ menu::root::fish() {
     app::set_deps fish || return 1
     chsh -s fish && i18n_msg::shell_changed fish
 }
-menu::root::fish::title() { i18n::printf -v "$1" "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$(pure::command_status fish)"; }
+menu::root::fish::title() {
+    local _status=''
+    pure::command_status fish _status
+    i18n::printf -v "$1" "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$_status"
+}
 
 menu::ffff() { i18n::printf -v "$1" "${_green}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}󰻳 About fish's fisher plugins${_off}"; }
 
