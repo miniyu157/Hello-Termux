@@ -587,11 +587,13 @@ pure::parse_children() {
 
 # 递归菜单渲染器
 # $1  S-表达式，如 "(root m mc u (ffff f a b) q)"
+# $2  根名称（首层自动从 $1 提取，递归时透传）
 app::loop_menu() {
-    local raw_expr="$1" flat parent children_flat
+    local raw_expr="$1" root_name="${2:-}" flat parent children_flat
     flat=$(pure::strip_parens "$(printf '%s' "$raw_expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
     parent="${flat%% *}" children_flat="${flat#* }"
     [[ $children_flat == "$parent" ]] && children_flat=''
+    [[ -z $root_name ]] && root_name="$parent"
 
     while true; do
         # 调用 menu::<parent>，第一行作为主标题（✦ 包裹），剩余行作为副标题（4空格缩进）
@@ -619,16 +621,16 @@ app::loop_menu() {
 
         # Footer + 输入
         printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
-        if [[ $parent == "root" ]]; then
+        if [[ $parent == "$root_name" ]]; then
             i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
         else
             i18n::printf "${_uline}键入选项或留空返回:${_off}\n" "${_uline}Type a choice or leave empty to go back:${_off}\n"
         fi
-        read -e -r choice < /dev/tty || {
+        read -r choice < /dev/tty || {
             printf "\n"
             return
         }
-        [[ -z $choice ]] && { [[ $parent == "root" ]] && continue || return; }
+        [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
         # 再次解析子节点，匹配用户输入；未匹配 → 继续循环（重新渲染）
         while IFS= read -r child; do
@@ -637,14 +639,12 @@ app::loop_menu() {
                 inner=$(pure::strip_parens "$child")
                 gname="${inner%% *}"
                 if [[ $gname == "$choice" ]]; then
-                    history -s -- "$choice"
-                    app::loop_menu "$child"
+                    app::loop_menu "$child" "$root_name"
                     break
                 fi
             elif [[ $child == "$choice" ]]; then
                 local action_func="menu::${parent}::${choice}"
                 if compgen -A function -- "$action_func" | grep -qx "$action_func"; then
-                    history -s -- "$choice"
                     MENU_QUICK=0
                     "$action_func"
                     local _rc=$?
