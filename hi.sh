@@ -647,10 +647,12 @@ pure::bench_menu() {
                 if [[ $child == '('*')' ]]; then
                     pure::strip_parens "$child" _in
                     gname="${_in%% *}"
+                    _gt=''
                     "menu::${gname}" _gt 2> /dev/null
                     printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
                 else
                     title_func="menu::${parent}::${child}::title"
+                    _lt=''
                     "$title_func" _lt 2> /dev/null
                     printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
                 fi
@@ -712,10 +714,12 @@ app::loop_menu() {
             if [[ $child == '('*')' ]]; then
                 pure::strip_parens "$child" _in
                 gname="${_in%% *}"
+                _gt=''
                 "menu::${gname}" _gt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
             else
                 title_func="menu::${parent}::${child}::title"
+                _lt=''
                 "$title_func" _lt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
             fi
