@@ -177,7 +177,7 @@ pure::warn_existing_config() {
 
 # 应用一个 nerd font 字体
 # $1  用于拼接仓库的后缀
-termux::apply_nerd_font() {
+sys::termux_apply_nerd_font() {
     local name="$1"
     pure::cache_resource "$path_cache_fonts" "$name" \
         "${URL_font_prefix}/${name}" || return 1
@@ -188,7 +188,7 @@ termux::apply_nerd_font() {
 
 # 应用一个 iTerm2 颜色主题
 # $1  主题名称（用于拼接 URL 后缀）
-termux::apply_web_theme() {
+sys::termux_apply_web_theme() {
     local name="$1"
     pure::cache_resource "$path_cache_themes" "$name" \
         "${URL_theme_prefix}/${name// /%20}" || return 1
@@ -199,7 +199,7 @@ termux::apply_web_theme() {
 
 # 应用一个按键布局
 # $1  按键布局名称（用于拼接 URL 后缀）
-termux::apply_keymap() {
+sys::termux_apply_keymap() {
     local name="$1"
     pure::cache_resource "$path_cache_keymaps" "$name" \
         "${URL_keymap_prefix}/${name// /%20}" || return 1
@@ -208,7 +208,7 @@ termux::apply_keymap() {
     i18n::printf "应用按键布局 '%s' 成功。\n" "Keymap '%s' applied successfully.\n" "$name"
 }
 
-termux::open_url() {
+sys::open_url() {
     xdg-open "$1" || {
         i18n::printf "拉起 xdg-open 失败: %s\n" "Failed to open URL: %s\n" "$1"
         return 1
@@ -254,7 +254,7 @@ menu::root::t() {
         return 1
     }
 
-    termux::apply_web_theme "$chosen_theme"
+    sys::termux_apply_web_theme "$chosen_theme"
 }
 menu::root::t::title() { i18n::printf "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 
@@ -273,7 +273,7 @@ menu::root::f() {
         return 1
     }
 
-    termux::apply_nerd_font "$chosen"
+    sys::termux_apply_nerd_font "$chosen"
 }
 menu::root::f::title() { i18n::printf "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
 
@@ -291,26 +291,26 @@ menu::root::k() {
         MENU_QUICK=1
         return 1
     }
-    termux::apply_keymap "$chosen"
+    sys::termux_apply_keymap "$chosen"
 }
 menu::root::k::title() { i18n::printf "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
 
-menu::root::tb() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
+menu::root::tb() { sys::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
 menu::root::tb::title() { i18n::printf "${_cat3}󰆋 在浏览器预览颜色主题${_off}" "${_cat3}󰆋 Preview color themes in browser${_off}"; }
 
-menu::root::tt() { termux::apply_web_theme "Dracula+.properties"; }
+menu::root::tt() { sys::termux_apply_web_theme "Dracula+.properties"; }
 menu::root::tt::title() { i18n::printf "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
 
-menu::root::fb() { termux::open_url "https://www.programmingfonts.org/#oxproto"; }
+menu::root::fb() { sys::open_url "https://www.programmingfonts.org/#oxproto"; }
 menu::root::fb::title() { i18n::printf "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
 
-menu::root::ff() { termux::apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
+menu::root::ff() { sys::termux_apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
 menu::root::ff::title() { i18n::printf "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
 
-menu::root::kb() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::root::kb() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
 menu::root::kb::title() { i18n::printf "${_cat4}󰆋 在浏览器预览按键布局${_off}" "${_cat4}󰆋 Preview keymaps in browser${_off}"; }
 
-menu::root::kk() { termux::apply_keymap "Enhanced.properties"; }
+menu::root::kk() { sys::termux_apply_keymap "Enhanced.properties"; }
 menu::root::kk::title() { i18n::printf "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 
 # 检查 fisher 插件是否已安装
@@ -515,10 +515,10 @@ menu::root::cl() {
 }
 menu::root::cl::title() { i18n::printf " 清除下载缓存${_faint}（TTL: 30天）${_off}" " Clear download cache${_faint} (TTL: 30 days)${_off}"; }
 
-menu::root::is() { termux::open_url "https://github.com/miniyu157/hello-termux/issues"; }
+menu::root::is() { sys::open_url "https://github.com/miniyu157/hello-termux/issues"; }
 menu::root::is::title() { i18n::printf "󰭻 前往 Issues 页面" "󰭻 Go to Issues page"; }
 
-menu::root::gh() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::root::gh() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
 menu::root::gh::title() { i18n::printf "󰊤 前往 Hello Termux 的仓库" "󰊤 Go to Hello Termux repository"; }
 
 menu::root::q() { exit 0; }
