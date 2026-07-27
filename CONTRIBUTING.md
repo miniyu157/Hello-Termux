@@ -1,4 +1,11 @@
-# Hello-Termux 开发约束
+# 贡献指南与架构约束
+
+Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供主题/字体/Shell 等一站式菜单安装。
+
+> 非 Termux 环境也可以使用部分功能，后续可能会做兼容，甚至升级项目定位。
+
+本文档既是项目的开发规范，也是希望贡献代码时的必读指南。
+请确保所有提交遵循以下约束。
 
 ## i18n
 
@@ -6,16 +13,14 @@
 - 纯数据文本不包含 ANSI 序列
 - `i18n::printf` 签名：
 
-  ```
+  ```text
   i18n::printf [-v varname] "中文 fmt" "英文 fmt" [args...]
   ```
 
   - 不带 `-v`：输出到 stdout（向后兼容，用于动作函数中直接打印到终端）
-  - 带 `-v varname`：写入指定变量，零 fork（用于 `::title` / 组标题等被调用方捕获输出的场景）
+  - 带 `-v varname`：写入指定变量，用于 `::title` / 组标题等被调用方捕获输出的场景
 
-## 零 fork 调用约定
-
-菜单渲染路径禁止使用 `$()` 捕获函数输出，所有标题函数统一采用变量传递：
+## 菜单渲染路径零 fork 调用约定
 
 - **`::title` 函数**（叶子标题）：接受 `$1` 为输出变量名，内部用 `i18n::printf -v "$1" "..." "..."`
 
@@ -55,6 +60,8 @@
   }
   ```
 
+- `::title` 内动态数据尽量零 fork，以保证菜单渲染性能
+
 ## ANSI 样式
 
 - 组标题和菜单项标题由调用方包裹 ANSI，遵循模式：`${_green}...${_faint}（附属信息）${_off}`
@@ -62,10 +69,12 @@
 
 ## 函数命名空间
 
-- `pure::` — 内部工具函数，与 UI 无关（文本处理、解析、状态判断等）。不等待用户交互、不写文件。被渲染路径调用的函数需支持可选输出变量以消除 fork（见 §零 fork 调用约定）
+- `pure::` — 内部工具函数，与 UI 无关（文本处理、解析、状态判断等）。不等待用户交互、不写文件。
+  被渲染路径调用的函数需支持可选输出变量以消除 fork（见 §零 fork 调用约定）
 - `menu::` — 菜单系统的三种角色，命名即约定：
   - `menu::groupname` — 组标题，接受 `$1` 为输出变量名，写入 i18n 文本（可含 ANSI）
-  - `menu::parent::key` — 叶子动作，执行操作（输出到 stdout）；`menu::parent::key::title` — 接受 `$1` 为输出变量名，写入 i18n 标题（可含 ANSI）
+  - `menu::parent::key` — 叶子动作，执行操作（输出到 stdout）；`menu::parent::key::title`
+    — 接受 `$1` 为输出变量名，写入 i18n 标题（可含 ANSI）
   - `menu::groupname::member` — 分组内子项的动作；`menu::groupname::member::title` — 同上接受输出变量
 - `app::` — 应用初始化与核心流程。存放生命周期函数（`set_*`）和递归渲染入口。渲染路径使用变量传递，禁止 `$()`
 - `sys::` — 有副作用操作，与 `pure::` 相反：可写文件、调外部命令。Termux 特定操作命名带 `termux_` 前缀，通用操作不加
@@ -74,12 +83,38 @@
 
 ## 菜单系统
 
-- 菜单树以 S-表达式 `"(root key1 key2 (groupname key3 key4))"` 定义，括号内为分组，直接传入 `app::loop_menu`
-- `app::loop_menu` 递归渲染：`while true` 循环 → 清屏 → 调用 `menu::<parent>` 获取标题 → 调用 `pure::parse_children` 解析子节点 → 遍历子节点调用 `::title` 函数获取显示文本 → `read` 输入 → 分发到 `menu::` 动作函数
-- 所有标题获取均通过变量传递，渲染路径零 fork：`pure::parse_children` 通过 nameref 数组输出，`app::loop_menu` 在 `while true` 循环前解析一次，循环内用 `for child in "${arr[@]}"` 迭代渲染与输入匹配
+- 菜单树以 S-表达式 `"(root key1 key2 (groupname key3 key4))"` 定义，括号内为分组，直接传入 `app::loop_menu`，排版随意，舒服即可。
+  解析器忽略换行与缩进，空格分隔 Token，括号仅用于嵌套分组，支持任意深度。
+- `app::loop_menu` 递归渲染：`while true` 循环 → 清屏 → 调用 `menu::<parent>` 获取标题
+  → 调用 `pure::parse_children` 解析子节点 → 遍历子节点调用 `::title` 函数获取显示文本
+  → `read` 输入 → 分发到 `menu::` 动作函数
 - `MENU_QUICK=1` 使操作完成后直接返回菜单不暂停
+
+## 如何写业务函数
+
+1. 定义叶子标题：
+
+   ```bash
+   menu::root::hello::title() { i18n::printf -v "$1" "打招呼" "Say hi"; }
+   ```
+
+2. 定义叶子动作：
+
+   ```bash
+   menu::root::hello() { i18n::printf "你好，世界" "Hello World"; }
+   ```
+
+3. 挂到菜单树：
+
+   ```bash
+   app::loop_menu '(root hello)'
+   ```
+
+## 内置测试工具
+
+- menu::b -- 菜单渲染性能基准测试，始终开放给用户菜单。
 
 ## 提交信息
 
-- 参考历史提交信息、简明扼要
-- 多行、中文、描述业务变更而非实现细节
+- 参考历史的多行提交信息（不要使用 --oneline）保持一致、简明扼要、多行、中文。
+- 描述业务变更而非实现细节、若无业务变更则只描述具体更改。
