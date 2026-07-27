@@ -25,8 +25,8 @@
 
 ## 菜单系统
 
-- `menu_tree` 变量以 S-表达式 `"(root key1 key2 (groupname key3 key4))"` 定义菜单树，括号内为分组
-- `app::submenu` 递归渲染：`while true` 循环 → 清屏 → 渲染标题和选项 → `read` 输入 → 分发到 `menu::` 函数
+- 菜单树以 S-表达式 `"(root key1 key2 (groupname key3 key4))"` 定义，括号内为分组，直接传入 `app::loop_menu`
+- `app::loop_menu` 递归渲染：`while true` 循环 → 清屏 → 渲染标题和选项 → `read` 输入 → 分发到 `menu::` 函数
 - `MENU_QUICK=1` 使操作完成后直接返回菜单不暂停
 
 ## 提交信息

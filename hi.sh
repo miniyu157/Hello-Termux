@@ -586,10 +586,12 @@ pure::parse_children() {
 }
 
 # 递归菜单渲染器
-# $1  父组名（root=根层级）
-# $2  扁平常量（该层级的子节点列表）
-app::submenu() {
-    local parent="$1" children_flat="$2"
+# $1  S-表达式，如 "(root m mc u (ffff f a b) q)"
+app::loop_menu() {
+    local raw_expr="$1" flat parent children_flat
+    flat=$(pure::strip_parens "$(printf '%s' "$raw_expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
+    parent="${flat%% *}" children_flat="${flat#* }"
+    [[ $children_flat == "$parent" ]] && children_flat=''
 
     while true; do
         # 调用 menu::<parent>，第一行作为主标题（✦ 包裹），剩余行作为副标题（4空格缩进）
@@ -635,10 +637,8 @@ app::submenu() {
                 inner=$(pure::strip_parens "$child")
                 gname="${inner%% *}"
                 if [[ $gname == "$choice" ]]; then
-                    local gchildren="${inner#* }"
-                    [[ $gchildren == "$gname" ]] && gchildren=''
                     history -s -- "$choice"
-                    app::submenu "$gname" "$gchildren"
+                    app::loop_menu "$child"
                     break
                 fi
             elif [[ $child == "$choice" ]]; then
@@ -662,8 +662,13 @@ app::submenu() {
     done
 }
 
-app::start_loop_menu() {
-    local menu_tree='(root
+declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m'
+
+app::set_lang
+app::set_paths
+app::set_resource_service github.com
+
+app::loop_menu '(root
 m  mc  u
 f  fb  ff
 t  tb  tt
@@ -677,18 +682,3 @@ s  l  i
 cl  is  gh
 q
 )'
-    local normalized flat root_name root_children
-    normalized=$(printf '%s' "$menu_tree" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')
-    flat=$(pure::strip_parens "$normalized")
-    root_name="${flat%% *}" root_children="${flat#* }"
-    [[ $root_children == "$root_name" ]] && root_children=''
-    app::submenu "$root_name" "$root_children"
-}
-
-declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m'
-
-app::set_lang
-app::set_paths
-app::set_resource_service github.com
-
-app::start_loop_menu
