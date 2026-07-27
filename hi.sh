@@ -487,7 +487,16 @@ menu::q::title() { i18n::printf "󰩈 退出程序" "󰩈 Exit"; }
 
 # -- i18n --
 
-app::set_lang() { case "$(getprop persist.sys.locale 2> /dev/null)" in zh-*) APP_LANG="zh" ;; *) APP_LANG="en" ;; esac }
+app::set_lang() {
+    local android_locale
+    android_locale="$(getprop persist.sys.locale 2> /dev/null)"
+
+    if [[ $android_locale == zh-* ]] || [[ ${LANG:-} == zh_* ]]; then
+        APP_LANG="zh"
+    else
+        APP_LANG="en"
+    fi
+}
 
 i18n::printf() {
     local fmt="$1"
