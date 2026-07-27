@@ -244,20 +244,66 @@ menu::kb::title() { i18n::printf "${_cat4}󰆋 在浏览器预览按键布局${_
 menu::kk() { termux::apply_keymap "Enhanced.properties"; }
 menu::kk::title() { i18n::printf "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 
+# 检查 fisher 插件是否已安装
+# $1  插件名（如 gazorby/fifc）
+# 返回 0=已安装  1=未安装  2=fisher 不可用  127=fish 不可用
+pure::fisher_plugin_installed() {
+    local plugin="$1" list
+    command -v fish > /dev/null 2>&1 || return 127
+    list=$(fish -c "fisher list" 2> /dev/null)
+    [[ -n $list ]] || return 2
+    grep -iqF "$plugin" <<< "$list" && return 0
+    return 1
+}
+
+# ---- fish 配置 ----
+
+# 获取 fisher 插件安装状态的 i18n 文本
+# $1  插件名
+pure::fisher_plugin_status() {
+    local rc
+    pure::fisher_plugin_installed "$1"
+    rc=$?
+    case $rc in
+        0) i18n::printf "已安装" "installed" ;;
+        127) i18n::printf "fish 不可用" "fish unavailable" ;;
+        2) i18n::printf "fisher 不可用" "fisher unavailable" ;;
+        *) i18n::printf "未安装" "not installed" ;;
+    esac
+}
+
+# 获取命令是否可用的 i18n 状态文本
+# $1  命令名
+pure::command_status() {
+    if command -v "$1" > /dev/null 2>&1; then
+        i18n::printf "已安装" "installed"
+    else
+        i18n::printf "未安装" "not installed"
+    fi
+}
+
 menu::fish() {
     app::set_deps fish || return 1
     chsh -s fish && i18n_msg::shell_changed fish
 }
-menu::fish::title() { i18n::printf "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_off}"; }
+menu::fish::title() { i18n::printf "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$(pure::command_status fish)"; }
 
-menu::ffff() {
+menu::ffff() { i18n::printf "${_green}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}󰻳 About fish's fisher plugins${_off}"; }
+
+menu::ffff::ffff() {
     local fisher_func="$HOME/.config/fish/functions/fisher.fish"
     if [[ ! -f $fisher_func ]]; then
         fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher" || return 1
     fi
-    i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以卸载自身。\n\n推荐:\n- 智能补全插件 gazorby/fifc\n- 优秀主题 IlanCosman/tide@v6\n\n探索开源社区以了解更多信息！\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n\nRecommended:\n- gazorby/fifc — smart completions\n- IlanCosman/tide@v6 — a beautiful prompt\n\nExplore the community for more!\n"
+    i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以用于卸载自身。\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n"
 }
-menu::ffff::title() { i18n::printf "${_green}󰻳 为 fish 安装 fisher 插件${_off}" "${_green}󰻳 Install fisher plugin manager for fish${_off}"; }
+menu::ffff::ffff::title() { i18n::printf "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "jorgebucaran/fisher")"; }
+
+menu::ffff::a() { fish -c "fisher install gazorby/fifc"; }
+menu::ffff::a::title() { i18n::printf "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "gazorby/fifc")"; }
+
+menu::ffff::b() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
+menu::ffff::b::title() { i18n::printf "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "IlanCosman/tide")"; }
 
 menu::eza() {
     app::set_deps eza gum || return 1
@@ -619,7 +665,7 @@ EOF
 # 添加测试
 # menu_keys=(m mc "g(a b c d e f)" "empty()" "edge(x y z)" "undef(a b)" "bad)" undef_item u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
 
-menu_keys=(m mc u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
+menu_keys=(m mc u f fb ff t tb tt k kb kk fish "ffff(ffff a b)" eza zox atu s l i cl is gh q)
 
 while true; do
     printf '%s' "${_refresh}"
