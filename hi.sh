@@ -215,8 +215,8 @@ termux::open_url() {
     }
 }
 
-menu::m() { termux-change-repo; }
-menu::m::title() {
+menu::root::m() { termux-change-repo; }
+menu::root::m::title() {
     local link=$(readlink "$path_termux_mirror_link" 2> /dev/null)
     link="${link##*/}"
     i18n::printf \
@@ -225,11 +225,11 @@ menu::m::title() {
         "${link:-$(i18n::printf "未设置" "none")}"
 }
 
-menu::mc() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_termux_mirror_link" && i18n::printf "设置完成。\n" "Done.\n"; }
-menu::mc::title() { i18n::printf "${_cat1} 快捷设置中国大陆软件源${_off}" "${_cat1} Quick-set Chinese mainland mirror${_off}"; }
+menu::root::mc() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_termux_mirror_link" && i18n::printf "设置完成。\n" "Done.\n"; }
+menu::root::mc::title() { i18n::printf "${_cat1} 快捷设置中国大陆软件源${_off}" "${_cat1} Quick-set Chinese mainland mirror${_off}"; }
 
-menu::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
-menu::u::title() {
+menu::root::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
+menu::root::u::title() {
     local ts=$(find "$path_termux_apt_lists/" -maxdepth 1 -type f -printf '%T@\n' 2> /dev/null | sort -rn | head -1)
     local date
     [[ -n $ts ]] && date=$(date -d "@$ts" +'%Y-%m-%d %H:%M:%S' 2> /dev/null)
@@ -239,7 +239,7 @@ menu::u::title() {
         "${date:-$(i18n::printf "无" "none")}"
 }
 
-menu::t() {
+menu::root::t() {
     app::set_deps fzf || return 1
 
     local theme_list
@@ -256,9 +256,9 @@ menu::t() {
 
     termux::apply_web_theme "$chosen_theme"
 }
-menu::t::title() { i18n::printf "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
+menu::root::t::title() { i18n::printf "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 
-menu::f() {
+menu::root::f() {
     app::set_deps fzf || return 1
 
     local font_list
@@ -275,9 +275,9 @@ menu::f() {
 
     termux::apply_nerd_font "$chosen"
 }
-menu::f::title() { i18n::printf "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
+menu::root::f::title() { i18n::printf "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
 
-menu::k() {
+menu::root::k() {
     app::set_deps fzf || return 1
 
     local keymap_list
@@ -293,25 +293,25 @@ menu::k() {
     }
     termux::apply_keymap "$chosen"
 }
-menu::k::title() { i18n::printf "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
+menu::root::k::title() { i18n::printf "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
 
-menu::tb() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
-menu::tb::title() { i18n::printf "${_cat3}󰆋 在浏览器预览颜色主题${_off}" "${_cat3}󰆋 Preview color themes in browser${_off}"; }
+menu::root::tb() { termux::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
+menu::root::tb::title() { i18n::printf "${_cat3}󰆋 在浏览器预览颜色主题${_off}" "${_cat3}󰆋 Preview color themes in browser${_off}"; }
 
-menu::tt() { termux::apply_web_theme "Dracula+.properties"; }
-menu::tt::title() { i18n::printf "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
+menu::root::tt() { termux::apply_web_theme "Dracula+.properties"; }
+menu::root::tt::title() { i18n::printf "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
 
-menu::fb() { termux::open_url "https://www.programmingfonts.org/#oxproto"; }
-menu::fb::title() { i18n::printf "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
+menu::root::fb() { termux::open_url "https://www.programmingfonts.org/#oxproto"; }
+menu::root::fb::title() { i18n::printf "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
 
-menu::ff() { termux::apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
-menu::ff::title() { i18n::printf "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
+menu::root::ff() { termux::apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
+menu::root::ff::title() { i18n::printf "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
 
-menu::kb() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
-menu::kb::title() { i18n::printf "${_cat4}󰆋 在浏览器预览按键布局${_off}" "${_cat4}󰆋 Preview keymaps in browser${_off}"; }
+menu::root::kb() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::root::kb::title() { i18n::printf "${_cat4}󰆋 在浏览器预览按键布局${_off}" "${_cat4}󰆋 Preview keymaps in browser${_off}"; }
 
-menu::kk() { termux::apply_keymap "Enhanced.properties"; }
-menu::kk::title() { i18n::printf "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
+menu::root::kk() { termux::apply_keymap "Enhanced.properties"; }
+menu::root::kk::title() { i18n::printf "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 
 # 检查 fisher 插件是否已安装
 # $1  插件名（如 gazorby/fifc）
@@ -351,11 +351,11 @@ pure::command_status() {
     fi
 }
 
-menu::fish() {
+menu::root::fish() {
     app::set_deps fish || return 1
     chsh -s fish && i18n_msg::shell_changed fish
 }
-menu::fish::title() { i18n::printf "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$(pure::command_status fish)"; }
+menu::root::fish::title() { i18n::printf "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$(pure::command_status fish)"; }
 
 menu::ffff() { i18n::printf "${_green}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}󰻳 About fish's fisher plugins${_off}"; }
 
@@ -472,7 +472,7 @@ end
 }
 menu::sh::atu::title() { i18n::printf "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
 
-menu::s() {
+menu::root::s() {
     case "$APP_RESOURCE_SERVICE" in
         cdn.jsdelivr.net) app::set_resource_service github.com ;;
         github.com) app::set_resource_service cdn.statically.io ;;
@@ -480,9 +480,9 @@ menu::s() {
     esac
     MENU_QUICK=1
 }
-menu::s::title() { i18n::printf "󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}" "󰛍 Switch resource server${_faint} (current: %s)${_off}" "$APP_RESOURCE_SERVICE"; }
+menu::root::s::title() { i18n::printf "󰛍 切换程序资源服务器${_faint}（当前: %s）${_off}" "󰛍 Switch resource server${_faint} (current: %s)${_off}" "$APP_RESOURCE_SERVICE"; }
 
-menu::i() {
+menu::root::i() {
     i18n::printf "拉取文件: %s\n" "Fetching file: %s\n" "$URL_exe"
     curl -#L "$URL_exe" -o "$path_install_bin" || {
         i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$URL_exe"
@@ -497,32 +497,34 @@ EOF
     chmod +x "$path_uninstall_bin"
     i18n::printf "安装完成。使用 hi 启动。\n使用 hi-uninstall 卸载。\n" "Done. Run 'hi' to start.\nRun 'hi-uninstall' to uninstall.\n"
 }
-menu::i::title() { i18n::printf " 将此程序安装到本地" " Install this program locally"; }
+menu::root::i::title() { i18n::printf " 将此程序安装到本地" " Install this program locally"; }
 
-menu::l() {
+menu::root::l() {
     case "$APP_LANG" in
         zh) APP_LANG="en" ;;
         *) APP_LANG="zh" ;;
     esac
     MENU_QUICK=1
 }
-menu::l::title() { i18n::printf " 切换语言${_faint}（目前：中文）${_off}" " Switch Language${_faint} (Current: English)${_off}"; }
+menu::root::l::title() { i18n::printf " 切换语言${_faint}（目前：中文）${_off}" " Switch Language${_faint} (Current: English)${_off}"; }
 
-menu::cl() {
+menu::root::cl() {
     rm -rf "$path_cache_dir"
     mkdir -p "$path_cache_dir"
     i18n::printf "清理: %s\n" "Cleared: %s\n" "$path_cache_dir"
 }
-menu::cl::title() { i18n::printf " 清除下载缓存${_faint}（TTL: 30天）${_off}" " Clear download cache${_faint} (TTL: 30 days)${_off}"; }
+menu::root::cl::title() { i18n::printf " 清除下载缓存${_faint}（TTL: 30天）${_off}" " Clear download cache${_faint} (TTL: 30 days)${_off}"; }
 
-menu::is() { termux::open_url "https://github.com/miniyu157/hello-termux/issues"; }
-menu::is::title() { i18n::printf "󰭻 前往 Issues 页面" "󰭻 Go to Issues page"; }
+menu::root::is() { termux::open_url "https://github.com/miniyu157/hello-termux/issues"; }
+menu::root::is::title() { i18n::printf "󰭻 前往 Issues 页面" "󰭻 Go to Issues page"; }
 
-menu::gh() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
-menu::gh::title() { i18n::printf "󰊤 前往 Hello Termux 的仓库" "󰊤 Go to Hello Termux repository"; }
+menu::root::gh() { termux::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::root::gh::title() { i18n::printf "󰊤 前往 Hello Termux 的仓库" "󰊤 Go to Hello Termux repository"; }
 
-menu::q() { exit 0; }
-menu::q::title() { i18n::printf "󰩈 退出程序" "󰩈 Exit"; }
+menu::root::q() { exit 0; }
+menu::root::q::title() { i18n::printf "󰩈 退出程序" "󰩈 Exit"; }
+
+menu::root() { printf "Hello Termux${_off}\n${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
 
 # -- i18n --
 
@@ -545,7 +547,143 @@ i18n::printf() {
 
 i18n_msg::shell_changed() { i18n::printf "${_ok}>${_off} 已更改 shell 配置，使用以下操作均可查看效果：\n- 开启新会话\n- 重启终端应用\n- 运行 '${_hl}exec %s${_off}'\n" "${_ok}>${_off} Shell configuration changed. To see the effect:\n- Start a new session\n- Restart the terminal app\n- Run '${_hl}exec %s${_off}'\n" "$1"; }
 
-# -- init --
+# -- loop menu --
+
+# 剥离 S-表达式最外层括号：(a b c) → a b c
+pure::strip_parens() {
+    local s="${1#(}"
+    printf '%s\n' "${s%)}"
+}
+
+# 按括号深度将扁平常量解析为逐行子节点
+# "a (g1 b (g2 c)) f" → a \n (g1 b (g2 c)) \n f
+pure::parse_children() {
+    local input="$1" depth=0 current='' i=0 ch
+    while ((i < ${#input})); do
+        ch="${input:i:1}"
+        case "$ch" in
+            '(')
+                ((depth++))
+                current+="$ch"
+                ;;
+            ')')
+                ((depth--))
+                current+="$ch"
+                ;;
+            ' ')
+                if ((depth == 0)); then
+                    [[ -n $current ]] && printf '%s\n' "$current"
+                    current=''
+                else
+                    current+="$ch"
+                fi
+                ;;
+            *) current+="$ch" ;;
+        esac
+        ((i++))
+    done
+    [[ -n $current ]] && printf '%s\n' "$current"
+}
+
+# 递归菜单渲染器
+# $1  父组名（root=根层级）
+# $2  扁平常量（该层级的子节点列表）
+app::submenu() {
+    local parent="$1" children_flat="$2"
+
+    while true; do
+        # 调用 menu::<parent>，第一行作为主标题（✦ 包裹），剩余行作为副标题（4空格缩进）
+        local header_text first_line rest_lines
+        header_text=$("menu::${parent}" 2> /dev/null || true)
+        [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
+        [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
+        printf '%s\n' "${_refresh}"
+        printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
+        [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
+        printf '%s\n' "─────────────────────────────────────────────────"
+
+        # 渲染子节点
+        local child inner gname title_func
+        while IFS= read -r child; do
+            [[ -z $child ]] && continue
+            if [[ $child == '('*')' ]]; then
+                inner=$(pure::strip_parens "$child") gname="${inner%% *}"
+                printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$("menu::${gname}" 2> /dev/null)"
+            else
+                title_func="menu::${parent}::${child}::title"
+                printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$($title_func 2> /dev/null)"
+            fi
+        done < <(pure::parse_children "$children_flat")
+
+        # Footer + 输入
+        printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
+        if [[ $parent == "root" ]]; then
+            i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
+        else
+            i18n::printf "${_uline}键入选项或留空返回:${_off}\n" "${_uline}Type a choice or leave empty to go back:${_off}\n"
+        fi
+        read -e -r choice < /dev/tty || {
+            printf "\n"
+            return
+        }
+        [[ -z $choice ]] && { [[ $parent == "root" ]] && continue || return; }
+
+        # 再次解析子节点，匹配用户输入；未匹配 → 继续循环（重新渲染）
+        while IFS= read -r child; do
+            [[ -z $child ]] && continue
+            if [[ $child == '('*')' ]]; then
+                inner=$(pure::strip_parens "$child")
+                gname="${inner%% *}"
+                if [[ $gname == "$choice" ]]; then
+                    local gchildren="${inner#* }"
+                    [[ $gchildren == "$gname" ]] && gchildren=''
+                    history -s -- "$choice"
+                    app::submenu "$gname" "$gchildren"
+                    break
+                fi
+            elif [[ $child == "$choice" ]]; then
+                local action_func="menu::${parent}::${choice}"
+                if compgen -A function -- "$action_func" | grep -qx "$action_func"; then
+                    history -s -- "$choice"
+                    MENU_QUICK=0
+                    "$action_func"
+                    local _rc=$?
+                    ((MENU_QUICK)) || {
+                        local _p="$_ok>"
+                        ((_rc)) && _p="${_cat1}×"
+                        i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
+                        i18n::printf "  按回车键继续..." "  Press Enter to continue..."
+                        read -r _ < /dev/tty
+                    }
+                fi
+                break
+            fi
+        done < <(pure::parse_children "$children_flat")
+    done
+}
+
+app::start_loop_menu() {
+    local menu_tree='(root
+m  mc  u
+f  fb  ff
+t  tb  tt
+k  kb  kk
+fish
+(ffff
+  f  a  b)
+(sh
+  eza  zox  atu)
+s  l  i
+cl  is  gh
+q
+)'
+    local normalized flat root_name root_children
+    normalized=$(printf '%s' "$menu_tree" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')
+    flat=$(pure::strip_parens "$normalized")
+    root_name="${flat%% *}" root_children="${flat#* }"
+    [[ $root_children == "$root_name" ]] && root_children=''
+    app::submenu "$root_name" "$root_children"
+}
 
 declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m'
 
@@ -553,170 +691,4 @@ app::set_lang
 app::set_paths
 app::set_resource_service github.com
 
-# -- loop menu --
-
-# # -- example group: g --
-# menu::g() { i18n::printf "📁 示例分组" "📁 Example Group"; }
-
-# menu::g::a() {
-#     i18n::printf "执行了 g::a — 这是一个快速操作\n" "Executed g::a — this is a quick action\n"
-#     MENU_QUICK=1
-# }
-# menu::g::a::title() { i18n::printf "选项 A - 快速操作" "Option A - Quick Action"; }
-
-# menu::g::b() { i18n::printf "执行了 g::b — 这是一个普通操作\n" "Executed g::b — this is a normal action\n"; }
-# menu::g::b::title() { i18n::printf "选项 B - 普通操作" "Option B - Normal Action"; }
-
-# menu::g::c() {
-#     i18n::printf "执行了 g::c — 这是另一个快速操作\n" "Executed g::c — another quick action\n"
-#     MENU_QUICK=1
-# }
-# menu::g::c::title() { i18n::printf "选项 C - 又一个快速操作" "Option C - Another Quick Action"; }
-
-# menu::g::d() {
-#     i18n::printf "执行了 g::d — 这是一个会失败的操作\n" "Executed g::d — this one fails\n"
-#     return 1
-# }
-# menu::g::d::title() { i18n::printf "选项 D - 失败操作（退出码 1）" "Option D - Failure (exit code 1)"; }
-
-# menu::g::e() {
-#     i18n::printf "执行了 g::e — 多重失败\n" "Executed g::e — multiple failures\n"
-#     return 2
-# }
-# menu::g::e::title() { i18n::printf "选项 E - 严重失败（退出码 2）" "Option E - Critical failure (exit code 2)"; }
-
-# menu::g::f() {
-#     i18n::printf "执行了 g::f — 失败但快速返回\n" "Executed g::f — fails but quick return\n"
-#     MENU_QUICK=1
-#     return 3
-# }
-# menu::g::f::title() { i18n::printf "选项 F - 快速失败（退出码 3）" "Option F - Quick failure (exit code 3)"; }
-
-# # -- edge-case groups --
-
-# # 空成员组：子菜单内只有标题和分隔线，无任何选项
-# menu::empty() { i18n::printf "🕳 空组（无成员）" "🕳 Empty group (no members)"; }
-
-# # 边界情况组：成员缺少 title / 缺少 action
-# menu::edge() { i18n::printf "⚠ 边界测试" "⚠ Edge Cases"; }
-
-# menu::edge::x() {
-#     i18n::printf "x 执行成功（无 title 函数）\n" "x executed (no title func)\n"
-#     MENU_QUICK=1
-# }
-# # menu::edge::x::title 故意不定义 — 测试缺 title 时的渲染
-
-# # menu::edge::y 故意不定义 — 测试缺 action 时的分发
-# menu::edge::y::title() { i18n::printf "选项 Y - 无动作函数" "Option Y - No action func"; }
-
-# menu::edge::z() { i18n::printf "z 正常执行\n" "z executed normally\n"; }
-# menu::edge::z::title() { i18n::printf "选项 Z - 正常对照" "Option Z - Normal control"; }
-
-# 子菜单：渲染组的成员列表，处理组成员分发
-# $1        组名（同时也是组标题函数名）
-# $2 $3 …   组成员名列表
-app::submenu() {
-    local group_name="$1"
-    shift
-    local -a members=("$@")
-
-    while true; do
-        cat << EOF
-${_refresh}
-${_b}  ✦ $("menu::${group_name}" 2> /dev/null) ✦ ${_off}
-─────────────────────────────────────────────────
-$(
-            for m in "${members[@]}"; do
-                printf "${_faint}${_italic}%4s${_off} %s\n" "$m" "$("menu::${group_name}::${m}::title" 2> /dev/null)"
-            done
-        )
-${_faint}─────────────────────────────────────────────────${_off}
-EOF
-        i18n::printf "${_uline}键入选项或留空返回:${_off}\n" "${_uline}Type a choice or leave empty to go back:${_off}\n"
-        read -e -r choice < /dev/tty || {
-            printf "\n"
-            return
-        }
-        [[ -z $choice ]] && return
-
-        compgen -A function -- "menu::${group_name}::${choice}" | grep -qx "menu::${group_name}::${choice}" || continue
-
-        history -s -- "$choice"
-        MENU_QUICK=0
-        "menu::${group_name}::${choice}"
-        local _rc=$?
-        ((MENU_QUICK)) || {
-            local _p="$_ok>"
-            ((_rc)) && _p="${_cat1}×"
-            i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
-            i18n::printf "  按回车键继续..." "  Press Enter to continue..."
-            read -r _ < /dev/tty
-        }
-    done
-}
-
-# 添加测试
-# menu_keys=(m mc "g(a b c d e f)" "empty()" "edge(x y z)" "undef(a b)" "bad)" undef_item u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
-
-menu_keys=(m mc u f fb ff t tb tt k kb kk fish "ffff(f a b)" "sh(eza zox atu)" s l i cl is gh q)
-
-while true; do
-    printf '%s' "${_refresh}"
-    cat << EOF
-${_b}  ✦ Hello Termux ✦ ${_off}
-${_faint}    https://github.com/miniyu157/Hello-Termux${_off}
-─────────────────────────────────────────────────
-$(
-        for _id in "${menu_keys[@]}"; do
-            if [[ $_id =~ ^[^()]+\([^()]*\)$ ]]; then
-                _gname="${_id%%(*}"
-                printf "${_faint}${_italic}%4s${_off} %s\n" "$_gname" "$("menu::$_gname" 2> /dev/null)"
-            else
-                printf "${_faint}${_italic}%4s${_off} %s\n" "$_id" "$("menu::${_id}::title" 2> /dev/null)"
-            fi
-        done
-    )
-${_faint}─────────────────────────────────────────────────${_off}
-EOF
-    i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
-    read -e -r choice < /dev/tty || {
-        printf "\n"
-        exit 0
-    }
-    [[ -z $choice ]] && continue
-
-    # 检查输入是否为组名 → 进入子菜单
-    _is_group=0
-    for _item in "${menu_keys[@]}"; do
-        if [[ $_item =~ ^[^()]+\([^()]*\)$ ]]; then
-            _gname="${_item%%(*}"
-            if [[ $choice == "$_gname" ]]; then
-                _members="${_item#*(}"
-                _members="${_members%)*}"
-                _is_group=1
-                break
-            fi
-        fi
-    done
-    if ((_is_group)); then
-        if compgen -A function -- "menu::$_gname" | grep -qx "menu::$_gname"; then
-            # shellcheck disable=SC2206
-            _members_arr=($_members)
-            app::submenu "$_gname" "${_members_arr[@]}"
-        fi
-        continue
-    fi
-
-    compgen -A function -- "menu::${choice}" | grep -qx "menu::${choice}" || continue
-    history -s -- "$choice"
-    MENU_QUICK=0
-    "menu::${choice}"
-    _rc=$?
-    ((MENU_QUICK)) || {
-        _p="$_ok>"
-        ((_rc)) && _p="${_cat1}×"
-        i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
-        i18n::printf "  按回车键继续..." "  Press Enter to continue..."
-        read -r _ < /dev/tty
-    }
-done
+app::start_loop_menu
