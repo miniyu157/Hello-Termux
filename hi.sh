@@ -106,6 +106,75 @@ pure::swap_file() {
     mv "$a" "$tmp" && mv "$b" "$a" && mv "$tmp" "$b"
 }
 
+# 将内容块写入 shell 配置文件（完整性检查、diff 预览、用户确认、原子写入）
+# $1: 配置文件路径
+# $2: 完整内容块
+# $3: shell 名称
+pure::write_shell_config() {
+    local config="$1" content="$2" shell="$3"
+
+    if [[ -f $config ]] && grep -zqF "$content" "$config" 2> /dev/null; then
+        i18n::printf "${_cat4}已有完全相同的配置，无需修改。${_off}\n" "${_cat4}Already configured, no changes.${_off}\n"
+        return 0
+    fi
+
+    mkdir -p "$(dirname "$config")"
+    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
+    [[ -f $config ]] && cp "$config" "$tmp"
+    [[ -s $tmp ]] && echo >> "$tmp"
+    printf '%s\n' "$content" >> "$tmp"
+
+    local src="$config"
+    [[ -f $config ]] || src=/dev/null
+    diff --color=always -u "$src" "$tmp" 2> /dev/null || true
+
+    gum confirm "$(i18n::printf "是否接受以上更改？" "Accept the above changes?")" || {
+        rm -f "$tmp"
+        MENU_QUICK=1
+        return 1
+    }
+
+    if [[ -f $config ]]; then
+        pure::swap_file "$tmp" "$config"
+        i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
+    else
+        mv "$tmp" "$config"
+        i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
+    fi
+    i18n_msg::shell_changed "$shell"
+}
+
+# 扫描 shell 配置，如已有工具痕迹则显示提示，始终放行
+# $1: shell (bash/fish)
+# $2: grep -E 模式
+# $3: 工具名
+pure::warn_existing_config() {
+    local shell="$1" pattern="$2" tool="$3"
+    local scan_target
+    case "$shell" in
+        bash) scan_target="$HOME/.bashrc" ;;
+        fish) scan_target="$HOME/.config/fish/" ;;
+    esac
+
+    local scan
+    scan=$(grep -rn -C 1 -E "$pattern" "$scan_target" 2> /dev/null |
+        awk -v g="$_green" -v o="$_off" '
+        /^--$/ { next }
+        match($0, /[-:][0-9]+[-:]/) {
+            f = substr($0, 1, RSTART-1)
+            r = substr($0, RSTART); sub(/^[-:]/, "", r); sub(/[-:]$/, "", r)
+            sub(/^[0-9]+/, g "&" o, r)
+            if (f != c) { c = f; print c ":" }
+            print "  " r
+        }
+    ')
+
+    if [[ -n $scan ]]; then
+        i18n::printf "${_cat4}警告: 在以下位置发现已有的 %s 配置：${_off}\n" "${_cat4}Warning: existing %s config found at:${_off}\n" "$tool"
+        printf '%s\n' "$scan"
+    fi
+}
+
 # 应用一个 nerd font 字体
 # $1  用于拼接仓库的后缀
 termux::apply_nerd_font() {
@@ -305,7 +374,9 @@ menu::ffff::a::title() { i18n::printf "${_green}gazorby/fifc — 智能补全${_
 menu::ffff::b() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
 menu::ffff::b::title() { i18n::printf "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "IlanCosman/tide")"; }
 
-menu::eza() {
+menu::sh() { i18n::printf "${_purple} 更多 Shell 辅助套件${_off}" "${_purple} More Shell utilities${_off}"; }
+
+menu::sh::eza() {
     app::set_deps eza gum || return 1
 
     local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "eza")" bash fish)
@@ -329,43 +400,13 @@ menu::eza() {
         fish) config="$HOME/.config/fish/conf.d/eza_alias.fish" ;;
     esac
 
-    local first="# -- eza alias {{ --" last="# -- }} eza alias --"
+    pure::warn_existing_config "$shell" 'alias.*eza' 'eza'
 
-    if [[ -f $config ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
-        i18n::printf "已有配置，未修改。\n" "Already configured, no changes.\n"
-        return 0
-    fi
-
-    mkdir -p "$(dirname "$config")"
-
-    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
-
-    [[ -f $config ]] && cp "$config" "$tmp"
-    [[ -s $tmp ]] && echo >> "$tmp"
-    printf '%s\n' "$content" >> "$tmp"
-
-    local src="$config"
-    [[ -f $config ]] || src=/dev/null
-    diff --color=always -u "$src" "$tmp" 2> /dev/null || true
-
-    gum confirm "$(i18n::printf "是否接受以上更改？" "Accept the above changes?")" || {
-        rm -f "$tmp"
-        MENU_QUICK=1
-        return 1
-    }
-
-    if [[ -f $config ]]; then
-        pure::swap_file "$tmp" "$config"
-        i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
-    else
-        mv "$tmp" "$config"
-        i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
-    fi
-    i18n_msg::shell_changed "$shell"
+    pure::write_shell_config "$config" "$content" "$shell"
 }
-menu::eza::title() { i18n::printf "${_purple} 安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple} Install eza and configure aliases for bash/fish${_off}"; }
+menu::sh::eza::title() { i18n::printf "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
 
-menu::zox() {
+menu::sh::zox() {
     app::set_deps zoxide gum || return 1
 
     local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "zoxide")" bash fish)
@@ -374,55 +415,31 @@ menu::zox() {
         return 1
     }
 
-    local config
+    local config content
     case "$shell" in
-        bash) config="$HOME/.bashrc" ;;
-        fish) config="$HOME/.config/fish/conf.d/zoxide.fish" ;;
+        bash)
+            config="$HOME/.bashrc"
+            content='# -- zoxide init {{ --
+eval "$(zoxide init bash)"
+# -- }} zoxide init --'
+            ;;
+        fish)
+            config="$HOME/.config/fish/conf.d/zoxide.fish"
+            content='# -- zoxide init {{ --
+if status is-interactive
+    zoxide init fish | source
+end
+# -- }} zoxide init --'
+            ;;
     esac
 
-    local first="# -- zoxide init {{ --" last="# -- }} zoxide init --"
+    pure::warn_existing_config "$shell" 'zoxide init' 'zoxide'
 
-    if [[ -f $config ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
-        i18n::printf "已有配置，未修改。\n" "Already configured, no changes.\n"
-        return 0
-    fi
-
-    local content
-    case "$shell" in
-        bash) content=$(printf '%s\n%s\n%s' "$first" 'eval "$(zoxide init bash)"' "$last") ;;
-        fish) content=$(printf '%s\n%s\n    %s\n%s\n%s' "$first" 'if status is-interactive' 'zoxide init fish | source' 'end' "$last") ;;
-    esac
-
-    mkdir -p "$(dirname "$config")"
-
-    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
-
-    [[ -f $config ]] && cp "$config" "$tmp"
-    [[ -s $tmp ]] && echo >> "$tmp"
-    printf '%s\n' "$content" >> "$tmp"
-
-    local src="$config"
-    [[ -f $config ]] || src=/dev/null
-    diff --color=always -u "$src" "$tmp" 2> /dev/null || true
-
-    gum confirm "$(i18n::printf "是否接受以上更改？" "Accept the above changes?")" || {
-        rm -f "$tmp"
-        MENU_QUICK=1
-        return 1
-    }
-
-    if [[ -f $config ]]; then
-        pure::swap_file "$tmp" "$config"
-        i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
-    else
-        mv "$tmp" "$config"
-        i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
-    fi
-    i18n_msg::shell_changed "$shell"
+    pure::write_shell_config "$config" "$content" "$shell"
 }
-menu::zox::title() { i18n::printf "${_purple} 安装配置 zoxide${_off}" "${_purple} Install and configure zoxide${_off}"; }
+menu::sh::zox::title() { i18n::printf "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
 
-menu::atu() {
+menu::sh::atu() {
     app::set_deps atuin gum || return 1
 
     local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "atuin")" bash fish)
@@ -431,53 +448,29 @@ menu::atu() {
         return 1
     }
 
-    local config
+    local config content
     case "$shell" in
-        bash) config="$HOME/.bashrc" ;;
-        fish) config="$HOME/.config/fish/conf.d/atuin.fish" ;;
+        bash)
+            config="$HOME/.bashrc"
+            content='# -- atuin init {{ --
+eval "$(atuin init bash --disable-up-arrow)"
+# -- }} atuin init --'
+            ;;
+        fish)
+            config="$HOME/.config/fish/conf.d/atuin.fish"
+            content='# -- atuin init {{ --
+if status is-interactive
+    atuin init fish --disable-up-arrow | source
+end
+# -- }} atuin init --'
+            ;;
     esac
 
-    local first="# -- atuin init {{ --" last="# -- }} atuin init --"
+    pure::warn_existing_config "$shell" 'atuin init' 'atuin'
 
-    if [[ -f $config ]] && grep -qF "$first" "$config" && grep -qF "$last" "$config"; then
-        i18n::printf "已有配置，未修改。\n" "Already configured, no changes.\n"
-        return 0
-    fi
-
-    local content
-    case "$shell" in
-        bash) content=$(printf '%s\n%s\n%s' "$first" 'eval "$(atuin init bash --disable-up-arrow)"' "$last") ;;
-        fish) content=$(printf '%s\n%s\n    %s\n%s\n%s' "$first" 'if status is-interactive' 'atuin init fish --disable-up-arrow | source' 'end' "$last") ;;
-    esac
-
-    mkdir -p "$(dirname "$config")"
-
-    local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
-
-    [[ -f $config ]] && cp "$config" "$tmp"
-    [[ -s $tmp ]] && echo >> "$tmp"
-    printf '%s\n' "$content" >> "$tmp"
-
-    local src="$config"
-    [[ -f $config ]] || src=/dev/null
-    diff --color=always -u "$src" "$tmp" 2> /dev/null || true
-
-    gum confirm "$(i18n::printf "是否接受以上更改？" "Accept the above changes?")" || {
-        rm -f "$tmp"
-        MENU_QUICK=1
-        return 1
-    }
-
-    if [[ -f $config ]]; then
-        pure::swap_file "$tmp" "$config"
-        i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
-    else
-        mv "$tmp" "$config"
-        i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
-    fi
-    i18n_msg::shell_changed "$shell"
+    pure::write_shell_config "$config" "$content" "$shell"
 }
-menu::atu::title() { i18n::printf "${_purple} 安装配置 atuin${_off}" "${_purple} Install and configure atuin${_off}"; }
+menu::sh::atu::title() { i18n::printf "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
 
 menu::s() {
     case "$APP_RESOURCE_SERVICE" in
@@ -665,7 +658,7 @@ EOF
 # 添加测试
 # menu_keys=(m mc "g(a b c d e f)" "empty()" "edge(x y z)" "undef(a b)" "bad)" undef_item u f fb ff t tb tt k kb kk fish ffff eza zox atu s l i cl is gh q)
 
-menu_keys=(m mc u f fb ff t tb tt k kb kk fish "ffff(f a b)" eza zox atu s l i cl is gh q)
+menu_keys=(m mc u f fb ff t tb tt k kb kk fish "ffff(f a b)" "sh(eza zox atu)" s l i cl is gh q)
 
 while true; do
     printf '%s' "${_refresh}"
