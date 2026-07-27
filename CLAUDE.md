@@ -76,7 +76,7 @@
 
 - 菜单树以 S-表达式 `"(root key1 key2 (groupname key3 key4))"` 定义，括号内为分组，直接传入 `app::loop_menu`
 - `app::loop_menu` 递归渲染：`while true` 循环 → 清屏 → 调用 `menu::<parent>` 获取标题 → 调用 `pure::parse_children` 解析子节点 → 遍历子节点调用 `::title` 函数获取显示文本 → `read` 输入 → 分发到 `menu::` 动作函数
-- 所有标题获取均通过变量传递，渲染路径中**唯一**的 fork 来自 `< <(pure::parse_children ...)` 进程替换
+- 所有标题获取均通过变量传递，渲染路径零 fork：`pure::parse_children` 通过 nameref 数组输出，`app::loop_menu` 在 `while true` 循环前解析一次，循环内用 `for child in "${arr[@]}"` 迭代渲染与输入匹配
 - `MENU_QUICK=1` 使操作完成后直接返回菜单不暂停
 
 ## 提交信息

@@ -572,6 +572,8 @@ pure::strip_parens() {
 # "a (g1 b (g2 c)) f" → a \n (g1 b (g2 c)) \n f
 pure::parse_children() {
     local input="$1" depth=0 current='' i=0 ch
+    local -n _out="$2"
+    _out=()
     while ((i < ${#input})); do
         ch="${input:i:1}"
         case "$ch" in
@@ -585,7 +587,7 @@ pure::parse_children() {
                 ;;
             ' ')
                 if ((depth == 0)); then
-                    [[ -n $current ]] && printf '%s\n' "$current"
+                    [[ -n $current ]] && _out+=("$current")
                     current=''
                 else
                     current+="$ch"
@@ -595,7 +597,7 @@ pure::parse_children() {
         esac
         ((i++))
     done
-    [[ -n $current ]] && printf '%s\n' "$current"
+    [[ -n $current ]] && _out+=("$current")
 }
 
 # -- 基准测试（测试代码） --
@@ -616,7 +618,7 @@ menu::_g::_b() { :; }
 # $2  迭代次数（必需）
 pure::bench_menu() {
     local expr="$1" iterations="$2"
-    local flat parent children_flat children child inner gname title_func i t0 t1 t2 timings=''
+    local flat parent children_flat child inner gname title_func i t0 t1 t2 timings=''
     local header_text='' first_line rest_lines _in='' _gt='' _lt=''
 
     flat=$(pure::strip_parens "$(printf '%s' "$expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
@@ -627,7 +629,8 @@ pure::bench_menu() {
     for ((i = 0; i < iterations; i++)); do
         # -- 解析 --
         t0=$EPOCHREALTIME
-        children=$(pure::parse_children "$children_flat")
+        local -a children_arr=()
+        pure::parse_children "$children_flat" children_arr
         t1=$EPOCHREALTIME
 
         # -- 渲染（复刻 app::loop_menu 一帧完整输出，stdout → /dev/null） --
@@ -640,8 +643,7 @@ pure::bench_menu() {
             [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
             printf '%s\n' "─────────────────────────────────────────────────"
 
-            while IFS= read -r child; do
-                [[ -z $child ]] && continue
+            for child in "${children_arr[@]}"; do
                 if [[ $child == '('*')' ]]; then
                     pure::strip_parens "$child" _in
                     gname="${_in%% *}"
@@ -652,7 +654,7 @@ pure::bench_menu() {
                     "$title_func" _lt 2> /dev/null
                     printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
                 fi
-            done <<< "$children"
+            done
 
             printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
             i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
@@ -690,6 +692,9 @@ app::loop_menu() {
     [[ $children_flat == "$parent" ]] && children_flat=''
     [[ -z $root_name ]] && root_name="$parent"
 
+    local -a children_arr=()
+    pure::parse_children "$children_flat" children_arr
+
     while true; do
         # 调用 menu::<parent>，第一行作为主标题（✦ 包裹），剩余行作为副标题（4空格缩进）
         local header_text='' first_line rest_lines
@@ -703,8 +708,7 @@ app::loop_menu() {
 
         # 渲染子节点
         local child inner gname title_func _in='' _gt='' _lt=''
-        while IFS= read -r child; do
-            [[ -z $child ]] && continue
+        for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
                 pure::strip_parens "$child" _in
                 gname="${_in%% *}"
@@ -715,7 +719,7 @@ app::loop_menu() {
                 "$title_func" _lt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
             fi
-        done < <(pure::parse_children "$children_flat")
+        done
 
         # Footer + 输入
         printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
@@ -730,9 +734,8 @@ app::loop_menu() {
         }
         [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
-        # 再次解析子节点，匹配用户输入；未匹配 → 继续循环（重新渲染）
-        while IFS= read -r child; do
-            [[ -z $child ]] && continue
+        # 匹配用户输入；未匹配 → 继续循环（重新渲染）
+        for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
                 pure::strip_parens "$child" inner
                 gname="${inner%% *}"
@@ -756,7 +759,7 @@ app::loop_menu() {
                 fi
                 break
             fi
-        done < <(pure::parse_children "$children_flat")
+        done
     done
 }
 
