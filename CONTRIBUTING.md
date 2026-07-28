@@ -110,9 +110,10 @@ Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供�
    app::loop_menu '(root hello)'
    ```
 
-## 内置测试工具
+## 测试
 
-- menu::b -- 菜单渲染性能基准测试，始终开放给用户菜单。
+- `test/test_menu.sh` — 交互式测试入口，提供渲染测试（`render`）和参数透传测试（`args`），启动方式：`bash test/test_menu.sh`
+- 生产菜单（`hi.sh`）不包含测试入口，开发和调试请使用 `test/test_menu.sh`
 
 ## 提交信息
 

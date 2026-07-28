@@ -598,90 +598,6 @@ pure::parse_children() {
     [[ -n $current ]] && _out+=("$current")
 }
 
-# -- 基准测试（测试代码） --
-
-# 菜单入口
-menu::root::b() { pure::bench_menu '(root _b _b _b _b _b _b _b _b _b _b (_g) (_g _b _b _b) _b _b _b _b _b _b _b)' 1200; }
-menu::root::b::title() { i18n::printf -v "$1" "󱦁 基准测试${_faint}（渲染耗时）${_off}" "󱦁 Benchmark${_faint} (render cost)${_off}"; }
-
-# 测试桩，均含 ANSI + i18n::printf -v，零 fork
-menu::_g() { i18n::printf -v "$1" "${_purple}󰻳 测试分组${_off}" "${_purple}󰻳 Test Group${_off}"; }
-menu::root::_b::title() { i18n::printf -v "$1" "${_cat1}󱦁 测试叶${_faint}（ANSI）${_off}" "${_cat1}󱦁 Test Leaf${_faint} (ANSI)${_off}"; }
-menu::_g::_b::title() { i18n::printf -v "$1" "${_green}󰐱 测试子叶${_faint}（ANSI）${_off}" "${_green}󰐱 Test Sub${_faint} (ANSI)${_off}"; }
-menu::root::_b() { :; }
-menu::_g::_b() { :; }
-
-# 测量菜单渲染耗时，完全复刻 app::loop_menu 一帧的渲染路径
-# $1  S-表达式（必需）
-# $2  迭代次数（必需）
-pure::bench_menu() {
-    local expr="$1" iterations="$2"
-    local flat parent children_flat child inner gname title_func i t0 t1 t2 timings=''
-    local header_text='' first_line rest_lines _in='' _gt='' _lt=''
-
-    flat=$(pure::strip_parens "$(printf '%s' "$expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
-    parent="${flat%% *}"
-    children_flat="${flat#* }"
-    [[ $children_flat == "$parent" ]] && children_flat=''
-
-    for ((i = 0; i < iterations; i++)); do
-        # -- 解析 --
-        t0=$EPOCHREALTIME
-        local -a children_arr=()
-        pure::parse_children "$children_flat" children_arr
-        t1=$EPOCHREALTIME
-
-        # -- 渲染（复刻 app::loop_menu 一帧完整输出，stdout → /dev/null） --
-        {
-            "menu::${parent}" header_text 2> /dev/null || true
-            [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
-            [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
-            printf '%s\n' "${_refresh}"
-            printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
-            [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
-            printf '%s\n' "─────────────────────────────────────────────────"
-
-            for child in "${children_arr[@]}"; do
-                if [[ $child == '('*')' ]]; then
-                    pure::strip_parens "$child" _in
-                    gname="${_in%% *}"
-                    _gt=''
-                    "menu::${gname}" _gt 2> /dev/null
-                    printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
-                else
-                    title_func="menu::${parent}::${child}::title"
-                    _lt=''
-                    "$title_func" _lt 2> /dev/null
-                    printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
-                fi
-            done
-
-            printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
-            i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
-        } > /dev/null
-        t2=$EPOCHREALTIME
-        timings+="$t0 $t1 $t2"$'\n'
-    done
-
-    awk -v n="$iterations" '
-    BEGIN { min_p = 999; min_r = 999 }
-    {
-        p = $2 - $1;  r = $3 - $2
-        sum_p += p;   sum_r += r
-        if (p < min_p) min_p = p
-        if (p > max_p) max_p = p
-        if (r < min_r) min_r = r
-        if (r > max_r) max_r = r
-    }
-    END {
-        printf "Iterations: %d\n", n
-        printf "Parse:   %8.3f ms avg  (%.3f min / %.3f max)\n", (sum_p/n)*1000, min_p*1000, max_p*1000
-        printf "Render:  %8.3f ms avg  (%.3f min / %.3f max)\n", (sum_r/n)*1000, min_r*1000, max_r*1000
-        printf "Total:   %8.3f ms avg  (%.3f min / %.3f max)\n", ((sum_p+sum_r)/n)*1000, (min_p+min_r)*1000, (max_p+max_r)*1000
-    }' <<< "$timings"
-}
-# -- 基准测试结束 --
-
 # Shell 风格引号解析：单/双引号内空格保留为同一参数，引号本身不进入结果
 # $1  输入字符串
 # $2  输出数组变量名（nameref）
@@ -818,6 +734,8 @@ app::loop_menu() {
 
 declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m'
 
+return 0 2> /dev/null
+
 app::set_lang
 app::set_paths
 app::set_resource_service github.com
@@ -834,6 +752,5 @@ fish
   eza  zox  atu)
 s  l  i
 cl  is  gh
-b
 q
 )'
