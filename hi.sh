@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC1036,SC1088,SC2155,SC2059,SC2016
+# shellcheck disable=SC2155,SC2317
 
 app::set_resource_service() {
     local service="$1"
@@ -44,7 +44,6 @@ app::set_resource_service() {
 app::set_paths() {
     path_termux_mirrors_dir="$PREFIX/etc/termux/mirrors"
     path_termux_mirror_link="$PREFIX/etc/termux/chosen_mirrors"
-    path_termux_apt_lists="$PREFIX/var/lib/apt/lists"
 
     path_termux_key_properties="$HOME/.termux/termux.properties"
     path_termux_colors_properties="$HOME/.termux/colors.properties"
@@ -416,6 +415,7 @@ menu::sh::zox() {
     case "$shell" in
         bash)
             config="$HOME/.bashrc"
+            # shellcheck disable=SC2016
             content='# -- zoxide init {{ --
 eval "$(zoxide init bash)"
 # -- }} zoxide init --'
@@ -449,6 +449,7 @@ menu::sh::atu() {
     case "$shell" in
         bash)
             config="$HOME/.bashrc"
+            # shellcheck disable=SC2016
             content='# -- atuin init {{ --
 eval "$(atuin init bash --disable-up-arrow)"
 # -- }} atuin init --'
@@ -521,8 +522,7 @@ menu::root::gh::title() { i18n::printf -v "$1" "󰊤 前往 Hello Termux 的仓�
 menu::root::q() { exit 0; }
 menu::root::q::title() { i18n::printf -v "$1" "󰩈 退出程序" "󰩈 Exit"; }
 
-menu::root() { printf -v "$1" "Hello Termux${_off}\n${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
-
+menu::root() { printf -v "$1" '%b\n%b' "Hello Termux${_off}" "${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
 # -- i18n --
 
 app::set_lang() {
@@ -546,8 +546,10 @@ i18n::printf() {
     local fmt="$1"
     [[ $APP_LANG != zh ]] && fmt="$2"
     if [[ -n $_v ]]; then
+        # shellcheck disable=SC2059
         printf -v "$_v" -- "$fmt" "${@:3}"
     else
+        # shellcheck disable=SC2059
         printf -- "$fmt" "${@:3}"
     fi
 }
@@ -663,6 +665,7 @@ app::loop_menu() {
         [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
         [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
         printf '%s\n' "${_refresh}"
+        # printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
         printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
         [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
         printf '%s\n' "─────────────────────────────────────────────────"
