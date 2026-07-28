@@ -526,6 +526,7 @@ menu::root() { printf -v "$1" "Hello Termux${_off}\n${_faint}https://github.com/
 # -- i18n --
 
 app::set_lang() {
+    [[ -n ${APP_LANG} ]] && return
     local android_locale
     android_locale="$(getprop persist.sys.locale 2> /dev/null)"
 
