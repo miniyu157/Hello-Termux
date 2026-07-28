@@ -681,6 +681,51 @@ pure::bench_menu() {
 }
 # -- 基准测试结束 --
 
+# Shell 风格引号解析：单/双引号内空格保留为同一参数，引号本身不进入结果
+# $1  输入字符串
+# $2  输出数组变量名（nameref）
+pure::split_args() {
+    local input="$1"
+    # shellcheck disable=SC2178
+    local -n _out="$2"
+    _out=()
+    local state='NONE' current='' ch i=0
+    while ((i < ${#input})); do
+        ch="${input:i:1}"
+        case "$state" in
+            NONE)
+                case "$ch" in
+                    "'") state='SINGLE' ;;
+                    '"') state='DOUBLE' ;;
+                    ' ' | $'\t')
+                        [[ -n $current ]] && _out+=("$current")
+                        current=''
+                        ;;
+                    *) current+="$ch" ;;
+                esac
+                ;;
+            SINGLE)
+                case "$ch" in
+                    "'") state='NONE' ;;
+                    *) current+="$ch" ;;
+                esac
+                ;;
+            DOUBLE)
+                case "$ch" in
+                    '"') state='NONE' ;;
+                    \\)
+                        ((i++))
+                        current+="${input:i:1}"
+                        ;; # match literal backslash
+                    *) current+="$ch" ;;
+                esac
+                ;;
+        esac
+        ((i++))
+    done
+    [[ -n $current ]] && _out+=("$current")
+}
+
 # 递归菜单渲染器
 # $1  S-表达式，如 "(root m mc u (ffff f a b) q)"
 # $2  根名称（首层自动从 $1 提取，递归时透传）
@@ -735,20 +780,26 @@ app::loop_menu() {
         }
         [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
+        # 拆分用户输入：第一项为 key，剩余为业务参数
+        local _key='' _parts=()
+        pure::split_args "$choice" _parts
+        _key="${_parts[0]:-}"
+        set -- "${_parts[@]:1}"
+
         # 匹配用户输入；未匹配 → 继续循环（重新渲染）
         for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
                 pure::strip_parens "$child" inner
                 gname="${inner%% *}"
-                if [[ $gname == "$choice" ]]; then
+                if [[ $gname == "$_key" ]]; then
                     app::loop_menu "$child" "$root_name"
                     break
                 fi
-            elif [[ $child == "$choice" ]]; then
-                local action_func="menu::${parent}::${choice}"
+            elif [[ $child == "$_key" ]]; then
+                local action_func="menu::${parent}::${_key}"
                 if compgen -A function -- "$action_func" | grep -qx "$action_func"; then
                     MENU_QUICK=0
-                    "$action_func"
+                    "$action_func" "$@"
                     local _rc=$?
                     ((MENU_QUICK)) || {
                         local _p="$_ok>"
