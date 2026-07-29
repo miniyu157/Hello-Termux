@@ -710,7 +710,7 @@ app::loop_menu() {
     local raw_expr="$1" root_name="${2:-}"
 
     # 规范化 S-表达式
-    local flat="$(pure::strip_parens "$(printf '%s' "$raw_expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")"
+    local flat="$(pure::strip_parens "$(printf '%s' "$raw_expr" | sed 's/;.*//' | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")"
     local parent="${flat%% *}" children_flat="${flat#* }"
     [[ $children_flat == "$parent" ]] && children_flat=''
     [[ -z $root_name ]] && root_name="$parent"
@@ -740,6 +740,8 @@ app::loop_menu() {
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
             else
                 local title_func="menu::${parent}::${child}::title" _lt=''
+                declare -F "menu::${parent}::${child}" >/dev/null 2>&1 ||
+                    title_func="menu::_::${child}::title"
                 "$title_func" _lt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
             fi
@@ -775,6 +777,8 @@ app::loop_menu() {
                 }
             elif [[ $child == "$key" ]]; then
                 local action_func="menu::${parent}::${key}"
+                declare -F "$action_func" >/dev/null 2>&1 ||
+                    action_func="menu::_::${key}"
                 if declare -F "$action_func" >/dev/null 2>&1; then
                     MENU_QUICK=0
                     "$action_func" "$@"
@@ -802,19 +806,19 @@ app::set_paths
 app::set_resource_service github.com
 
 app::loop_menu '(root
-m  mc  u
-(f 
-  f ff b f1 f2)
-(t
-  t tt b t1 t2)
-(k
-  k kk b k1)
-fish
-(ffff
-  f  a  b)
-(sh
-  eza  zox  atu)
-s  l  i
-cl  is  gh
-q
+      m  mc  u       ; Mirrors & updates.
+      (f             ; Fonts
+        f ff b f1 f2)
+      (t             ; Color themes
+        t tt b t1 t2)
+      (k             ; Keymaps
+        k kk b k1)
+      fish           ; Install fish shell.
+      (ffff          ; Fisher plugins
+        f  a  b)
+      (sh            ; Shell extras (eza/zoxide/atuin)
+        eza  zox  atu)
+      s  l  i        ; Switch server / Lang / Install
+      cl  is  gh     ; Clear cache / Issues / Repo
+      q              ; Exit
 )'

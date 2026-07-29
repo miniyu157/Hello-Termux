@@ -76,6 +76,7 @@ Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供�
   - `menu::parent::key` — 叶子动作，执行操作（输出到 stdout）；`menu::parent::key::title`
     — 接受 `$1` 为输出变量名，写入 i18n 标题（可含 ANSI）
   - `menu::groupname::member` — 分组内子项的动作；`menu::groupname::member::title` — 同上接受输出变量
+  - `menu::_::key` / `menu::_::key::title` — 通用回退。当 `menu::parent::key` 不存在时自动查找此命名空间，适合跨父菜单共享的动作或标题
 - `app::` — 应用初始化与核心流程。存放生命周期函数（`set_*`）和递归渲染入口。渲染路径使用变量传递，禁止 `$()`
 - `sys::` — 有副作用操作，与 `pure::` 相反：可写文件、调外部命令。Termux 特定操作命名带 `termux_` 前缀，通用操作不加
 - `i18n::` — 国际化基础函数，核心为 `i18n::printf`，签名见上文 §i18n
@@ -85,6 +86,9 @@ Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供�
 
 - 菜单树以 S-表达式 `"(root key1 key2 (groupname key3 key4))"` 定义，括号内为分组，直接传入 `app::loop_menu`，排版随意，舒服即可。
   解析器忽略换行与缩进，空格分隔 Token，括号仅用于嵌套分组，支持任意深度。
+  支持 `;` 行内注释：`;` 及之后到行尾的内容在解析时被剥离，可用于标注各节点用途。
+- 动作分发有回退链：先查 `menu::parent::key`，不存在则回退到 `menu::_::key`。
+  标题无独立回退 —— 标题跟随动作归属的命名空间（动作在 parent 则标题取 `menu::parent::key::title`，动作走 `_::` 则标题取 `menu::_::key::title`）。
 - `app::loop_menu` 递归渲染：`while true` 循环 → 清屏 → 调用 `menu::<parent>` 获取标题
   → 调用 `pure::parse_children` 解析子节点 → 遍历子节点调用 `::title` 函数获取显示文本
   → `read` 输入 → 分发到 `menu::` 动作函数
@@ -110,6 +114,13 @@ Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供�
 
    ```bash
    app::loop_menu '(root hello)'
+   ```
+
+4. 若同名 key 在多个父菜单下行为相同，定义一次 `menu::_::key` 即可，无需为每个 parent 重复定义：
+
+   ```bash
+   menu::_::hello::title() { i18n::printf -v "$1" "打招呼" "Say hi"; }
+   menu::_::hello()        { i18n::printf "你好，世界" "Hello World"; }
    ```
 
 ## 测试
