@@ -775,7 +775,7 @@ app::loop_menu() {
                 }
             elif [[ $child == "$key" ]]; then
                 local action_func="menu::${parent}::${key}"
-                if compgen -A function -- "$action_func" | grep -qx "$action_func"; then
+                if declare -F "$action_func" >/dev/null 2>&1; then
                     MENU_QUICK=0
                     "$action_func" "$@"
                     local _rc=$?
