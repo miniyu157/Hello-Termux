@@ -34,7 +34,7 @@ menu::_g::_b() { :; }
 pure::render_test() {
     local expr="$1" iterations="$2"
     local flat parent children_flat child inner gname title_func i t0 t1 t2 timings=''
-    local header_text='' first_line rest_lines _in='' _gt='' _lt=''
+    local header_text='' first_line rest_lines _in='' _gt='' _lt='' buf='' _line=''
 
     flat=$(pure::strip_parens "$(printf '%s' "$expr" | sed 's/;.*//' | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
     parent="${flat%% *}"
@@ -48,15 +48,15 @@ pure::render_test() {
         pure::parse_children "$children_flat" children_arr
         t1=$EPOCHREALTIME
 
-        # -- 渲染（复刻 app::loop_menu 一帧完整输出，stdout → /dev/null） --
+        # -- 渲染（复刻 app::loop_menu 一帧完整输出：buf 拼装 + 末尾一次性打印，stdout → /dev/null） --
         {
+            buf=''
             "menu::${parent}" header_text 2> /dev/null || true
             [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
             [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
-            printf '%s\n' "${_refresh}"
-            printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
-            [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
-            printf '%s\n' "─────────────────────────────────────────────────"
+            buf+="${_b}  ✦ ${first_line} ✦ ${_off}"$'\n'
+            [[ -n ${rest_lines:-} ]] && buf+='    '${rest_lines//$'\n'/$'\n'    }$'\n'
+            buf+="─────────────────────────────────────────────────"$'\n'
 
             for child in "${children_arr[@]}"; do
                 if [[ $child == '('*')' ]]; then
@@ -64,19 +64,24 @@ pure::render_test() {
                     gname="${_in%% *}"
                     _gt=''
                     "menu::${gname}" _gt 2> /dev/null
-                    printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
+                    _gt="${_gt%%$'\n'*}"
+                    printf -v _line "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
                 else
                     title_func="menu::${parent}::${child}::title"
                     _lt=''
                     declare -F "menu::${parent}::${child}" >/dev/null 2>&1 ||
                         title_func="menu::_::${child}::title"
                     "$title_func" _lt 2> /dev/null
-                    printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
+                    printf -v _line "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
                 fi
+                buf+="$_line"
             done
 
-            printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
-            i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
+            buf+="${_faint}─────────────────────────────────────────────────${_off}"$'\n'
+            i18n::printf -v _line "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
+            buf+="$_line"
+
+            printf '%s' "${_refresh}${buf}"
         } > /dev/null
         t2=$EPOCHREALTIME
         timings+="$t0 $t1 $t2"$'\n'

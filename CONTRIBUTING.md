@@ -61,6 +61,7 @@ Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供�
   ```
 
 - `::title` 内动态数据尽量零 fork，以保证菜单渲染性能
+- 渲染循环（`app::loop_menu`）内的输出用 buf 拼装 + 单次 `printf`，不使用逐行 `printf`，减少闪烁。
 
 ## ANSI 样式
 

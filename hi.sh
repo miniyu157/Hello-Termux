@@ -719,15 +719,17 @@ app::loop_menu() {
     pure::parse_children "$children_flat" children_arr
 
     while true; do
+        # 准备 buf
+        local buf='' _line=''
+
         # 调用 menu::<parent> 渲染标题，第一行作为主标题（✦ 包裹的加粗），剩余行作为副标题（4空格缩进）
         local header_text='' first_line rest_lines
         "menu::${parent}" header_text 2> /dev/null || true
         [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
         [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
-        printf '%s\n' "${_refresh}"
-        printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
-        [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
-        printf '%s\n' "─────────────────────────────────────────────────"
+        buf+="${_b}  ✦ ${first_line} ✦ ${_off}"$'\n'
+        [[ -n ${rest_lines:-} ]] && buf+='    '${rest_lines//$'\n'/$'\n'    }$'\n'
+        buf+="─────────────────────────────────────────────────"$'\n'
 
         # 渲染子节点
         local child _in='' _gt='' _lt=''
@@ -737,23 +739,28 @@ app::loop_menu() {
                 local gname="${_in%% *}" _gt=''
                 "menu::${gname}" _gt 2> /dev/null
                 _gt="${_gt%%$'\n'*}"
-                printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
+                printf -v _line "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
             else
                 local title_func="menu::${parent}::${child}::title" _lt=''
                 declare -F "menu::${parent}::${child}" > /dev/null 2>&1 ||
                     title_func="menu::_::${child}::title"
                 "$title_func" _lt 2> /dev/null
-                printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
+                printf -v _line "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
             fi
+            buf+="$_line"
         done
 
-        # Footer + 输入
-        printf '%s\n' "${_faint}─────────────────────────────────────────────────${_off}"
+        # Footer
+        buf+="${_faint}─────────────────────────────────────────────────${_off}"$'\n'
         if [[ $parent == "$root_name" ]]; then
-            i18n::printf "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
+            i18n::printf -v _line "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
         else
-            i18n::printf "${_uline}键入选项或留空返回:${_off}\n" "${_uline}Type a choice or leave empty to go back:${_off}\n"
+            i18n::printf -v _line "${_uline}键入选项或留空返回:${_off}\n" "${_uline}Type a choice or leave empty to go back:${_off}\n"
         fi
+        buf+="$_line"
+
+        printf '%s' "${_refresh}${buf}"
+
         read -r choice < /dev/tty || {
             printf "\n"
             return
