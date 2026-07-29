@@ -425,7 +425,11 @@ menu::ffff::b::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — �
 
 # ---- Shell 辅助套件 ----
 
-menu::sh() { i18n::printf -v "$1" "${_purple} 更多 Shell 辅助套件${_off}" "${_purple} More Shell utilities${_off}"; }
+menu::sh() { i18n::printf -v "$1" \
+    "${_purple}${_memu_hl} 更多 Shell 辅助套件${_off}
+${_faint}将显示 diff 更改供审阅，自动备份旧配置${_off}" \
+    "${_purple}${_memu_hl} More Shell utilities${_off}
+${_faint}Shows diff before applying, auto-backs up old config${_off}"; }
 menu::sh::eza() {
     app::set_deps eza gum || return 1
 
@@ -733,6 +737,7 @@ app::loop_menu() {
                 pure::strip_parens "$child" _in
                 local gname="${_in%% *}" _gt=''
                 "menu::${gname}" _gt 2> /dev/null
+                _gt="${_gt%%$'\n'*}"
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
             else
                 local title_func="menu::${parent}::${child}::title" _lt=''
