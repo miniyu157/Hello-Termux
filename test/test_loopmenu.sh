@@ -36,7 +36,7 @@ pure::render_test() {
     local flat parent children_flat child inner gname title_func i t0 t1 t2 timings=''
     local header_text='' first_line rest_lines _in='' _gt='' _lt=''
 
-    flat=$(pure::strip_parens "$(printf '%s' "$expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
+    flat=$(pure::strip_parens "$(printf '%s' "$expr" | sed 's/;.*//' | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
     parent="${flat%% *}"
     children_flat="${flat#* }"
     [[ $children_flat == "$parent" ]] && children_flat=''
@@ -68,6 +68,8 @@ pure::render_test() {
                 else
                     title_func="menu::${parent}::${child}::title"
                     _lt=''
+                    declare -F "menu::${parent}::${child}" >/dev/null 2>&1 ||
+                        title_func="menu::_::${child}::title"
                     "$title_func" _lt 2> /dev/null
                     printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
                 fi

@@ -123,10 +123,12 @@ Hello-Termux 是一个运行于 Termux 的交互式环境配置工具，提供�
    menu::_::hello()        { i18n::printf "你好，世界" "Hello World"; }
    ```
 
+以上即 hi.sh 的实际编写模式：在文件中任意位置定义函数，将 key 加入文件底部的 S-表达式即可。`app::loop_menu` 自动处理清屏、输入捕获、递归导航，无需额外 main 函数。
+
 ## 测试
 
-- `test/test_menu.sh` — 交互式测试入口，提供渲染测试（`render`）和参数透传测试（`args`），启动方式：`bash test/test_menu.sh`
-- 生产菜单（`hi.sh`）不包含测试入口，开发和调试请使用 `test/test_menu.sh`
+- `test/test_loopmenu.sh` — 交互式测试入口，提供渲染测试（`render`）和参数透传测试（`args`），启动方式：`bash test/test_loopmenu.sh`
+- 生产菜单（`hi.sh`）不包含测试入口，开发和调试请使用 `test/test_loopmenu.sh`
 
 ## 提交信息
 

@@ -740,7 +740,7 @@ app::loop_menu() {
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
             else
                 local title_func="menu::${parent}::${child}::title" _lt=''
-                declare -F "menu::${parent}::${child}" >/dev/null 2>&1 ||
+                declare -F "menu::${parent}::${child}" > /dev/null 2>&1 ||
                     title_func="menu::_::${child}::title"
                 "$title_func" _lt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
@@ -777,9 +777,9 @@ app::loop_menu() {
                 }
             elif [[ $child == "$key" ]]; then
                 local action_func="menu::${parent}::${key}"
-                declare -F "$action_func" >/dev/null 2>&1 ||
+                declare -F "$action_func" > /dev/null 2>&1 ||
                     action_func="menu::_::${key}"
-                if declare -F "$action_func" >/dev/null 2>&1; then
+                if declare -F "$action_func" > /dev/null 2>&1; then
                     MENU_QUICK=0
                     "$action_func" "$@"
                     local _rc=$?
