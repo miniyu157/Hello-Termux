@@ -649,9 +649,11 @@ pure::split_args() {
 # $1  S-表达式，如 "(root m mc u (ffff f a b) q)"
 # $2  根名称（首层自动从 $1 提取，递归时透传）
 app::loop_menu() {
-    local raw_expr="$1" root_name="${2:-}" flat parent children_flat
-    flat=$(pure::strip_parens "$(printf '%s' "$raw_expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")
-    parent="${flat%% *}" children_flat="${flat#* }"
+    local raw_expr="$1" root_name="${2:-}"
+
+    # 规范化 S-表达式
+    local flat="$(pure::strip_parens "$(printf '%s' "$raw_expr" | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")"
+    local parent="${flat%% *}" children_flat="${flat#* }"
     [[ $children_flat == "$parent" ]] && children_flat=''
     [[ -z $root_name ]] && root_name="$parent"
 
@@ -659,29 +661,26 @@ app::loop_menu() {
     pure::parse_children "$children_flat" children_arr
 
     while true; do
-        # 调用 menu::<parent>，第一行作为主标题（✦ 包裹），剩余行作为副标题（4空格缩进）
+        # 调用 menu::<parent> 渲染标题，第一行作为主标题（✦ 包裹的加粗），剩余行作为副标题（4空格缩进）
         local header_text='' first_line rest_lines
         "menu::${parent}" header_text 2> /dev/null || true
         [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
         [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
         printf '%s\n' "${_refresh}"
-        # printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
         printf "${_b}  ✦ %s ✦ ${_off}\n" "$first_line"
         [[ -n ${rest_lines:-} ]] && printf '    %s\n' "${rest_lines//$'\n'/$'\n'    }"
         printf '%s\n' "─────────────────────────────────────────────────"
 
         # 渲染子节点
-        local child inner gname title_func _in='' _gt='' _lt=''
+        local child _in='' _gt='' _lt=''
         for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
                 pure::strip_parens "$child" _in
-                gname="${_in%% *}"
-                _gt=''
+                local gname="${_in%% *}" _gt=''
                 "menu::${gname}" _gt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
             else
-                title_func="menu::${parent}::${child}::title"
-                _lt=''
+                local title_func="menu::${parent}::${child}::title" _lt=''
                 "$title_func" _lt 2> /dev/null
                 printf "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
             fi
@@ -701,22 +700,22 @@ app::loop_menu() {
         [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
         # 拆分用户输入：第一项为 key，剩余为业务参数
-        local _key='' _parts=()
-        pure::split_args "$choice" _parts
-        _key="${_parts[0]:-}"
-        set -- "${_parts[@]:1}"
+        local key='' parts=()
+        pure::split_args "$choice" parts
+        key="${parts[0]:-}"
+        set -- "${parts[@]:1}"
 
         # 匹配用户输入；未匹配 → 继续循环（重新渲染）
         for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
+                local inner
                 pure::strip_parens "$child" inner
-                gname="${inner%% *}"
-                if [[ $gname == "$_key" ]]; then
+                [[ ${inner%% *} == "$key" ]] && {
                     app::loop_menu "$child" "$root_name"
                     break
-                fi
-            elif [[ $child == "$_key" ]]; then
-                local action_func="menu::${parent}::${_key}"
+                }
+            elif [[ $child == "$key" ]]; then
+                local action_func="menu::${parent}::${key}"
                 if compgen -A function -- "$action_func" | grep -qx "$action_func"; then
                     MENU_QUICK=0
                     "$action_func" "$@"
