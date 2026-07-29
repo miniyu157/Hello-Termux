@@ -214,6 +214,39 @@ sys::open_url() {
     }
 }
 
+# 获取 fisher 插件安装状态的 i18n 文本
+# $1  插件名
+pure::fisher_plugin_status() {
+    local plugin="$1" list rc
+    command -v fish > /dev/null 2>&1 || rc=127
+    if [[ -z ${rc:-} ]]; then
+        list=$(fish -c "fisher list" 2> /dev/null)
+        if [[ -n $list ]]; then
+            grep -iqF "$plugin" <<< "$list" && rc=0 || rc=1
+        else
+            rc=2
+        fi
+    fi
+    case $rc in
+        0) i18n::printf "已安装" "installed" ;;
+        127) i18n::printf "fish 不可用" "fish unavailable" ;;
+        2) i18n::printf "fisher 不可用" "fisher unavailable" ;;
+        *) i18n::printf "未安装" "not installed" ;;
+    esac
+}
+
+# 获取命令是否可用的 i18n 状态文本
+pure::command_status() {
+    local _v="${2:-}"
+    if command -v "$1" > /dev/null 2>&1; then
+        i18n::printf ${_v:+-v "$_v"} "已安装" "installed"
+    else
+        i18n::printf ${_v:+-v "$_v"} "未安装" "not installed"
+    fi
+}
+
+# ==== 业务菜单函数开始 ====
+
 menu::root::m() { termux-change-repo; }
 menu::root::m::title() {
     local link=$(readlink "$path_termux_mirror_link" 2> /dev/null)
@@ -230,26 +263,15 @@ menu::root::mc::title() { i18n::printf -v "$1" "${_cat1} 快捷设置中国�
 menu::root::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
 menu::root::u::title() { i18n::printf -v "$1" "${_cat1}󰏕 更新和升级软件包${_off}" "${_cat1}󰏕 Update and upgrade packages${_off}"; }
 
-menu::root::t() {
-    app::set_deps fzf || return 1
-
-    local theme_list
-    pure::fetch_cached theme_list "$path_cache_theme_list" "$URL_theme_list" || {
-        i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$URL_theme_list"
-        return 1
-    }
-
-    local chosen_theme=$(printf '%s\n' "$theme_list" | awk '{full=$0; sub(/\.properties$/,""); print $0 "\t" full}' | fzf --prompt="$(i18n::printf "搜索主题 > " "Search themes > ")" --with-nth=1 --delimiter='\t' | cut -f2)
-    [[ -n $chosen_theme ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
-    sys::termux_apply_web_theme "$chosen_theme"
-}
-menu::root::t::title() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
-
-menu::root::f() {
+# ---- 字体菜单 ----
+menu::f() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 浏览/探索/更改字体${_off}" "${_cat2}${_memu_hl} Browse / discover / change fonts${_off}"; }
+menu::f::b() { sys::open_url "https://www.programmingfonts.org/#oxproto"; }
+menu::f::b::title() { i18n::printf -v "$1" "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
+menu::f::f1() { sys::termux_apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
+menu::f::f1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
+menu::f::f2() { sys::termux_apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-BoldItalic.ttf"; }
+menu::f::f2::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font Bold Italic${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font Bold Italic${_off}"; }
+menu::f::f() {
     app::set_deps fzf || return 1
 
     local font_list
@@ -266,9 +288,78 @@ menu::root::f() {
 
     sys::termux_apply_nerd_font "$chosen"
 }
-menu::root::f::title() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
+menu::f::f::title() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
+menu::f::ff() {
+    app::set_deps fzf || return 1
 
-menu::root::k() {
+    local cached=$(cd "$path_cache_fonts" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
+    [[ -n $cached ]] || {
+        i18n::printf "没有已缓存的字体: %s\n" "No cached fonts: %s\n" "$path_cache_fonts"
+        return 1
+    }
+
+    local chosen=$(printf '%s\n' "$cached" | awk -F/ '{full=$0; ext=$NF; sub(/\.[^.]+$/,"",ext); print ext "\t" full}' | fzf --prompt="$(i18n::printf "搜索已缓存字体 > " "Search cached fonts > ")" --with-nth=1 --delimiter='\t' | cut -f2)
+    [[ -n $chosen ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    sys::termux_apply_nerd_font "$chosen"
+}
+menu::f::ff::title() { i18n::printf -v "$1" "${_cat2} 浏览已缓存的字体${_faint}（~/.termux/cache）${_off}" "${_cat2} Browse cached fonts${_faint} (~/.termux/cache)${_off}"; }
+
+# ----颜色主题菜单 ----
+menu::t() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 浏览/探索/更改颜色主题${_off}" "${_cat3}${_memu_hl} Browse / discover / change color themes${_off}"; }
+menu::t::b() { sys::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
+menu::t::b::title() { i18n::printf -v "$1" "${_cat3}󰆋 在浏览器预览颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}󰆋 Preview color themes in browser${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
+menu::t::t1() { sys::termux_apply_web_theme "Dracula+.properties"; }
+menu::t::t1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
+menu::t::t2() { sys::termux_apply_web_theme "Gruvbox Dark.properties"; }
+menu::t::t2::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Gruvbox Dark 主题${_off}" "${_cat3} Quick-apply Gruvbox Dark${_off}"; }
+menu::t::t() {
+    app::set_deps fzf || return 1
+
+    local theme_list
+    pure::fetch_cached theme_list "$path_cache_theme_list" "$URL_theme_list" || {
+        i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$URL_theme_list"
+        return 1
+    }
+
+    local chosen_theme=$(printf '%s\n' "$theme_list" | awk '{full=$0; sub(/\.properties$/,""); print $0 "\t" full}' | fzf --prompt="$(i18n::printf "搜索主题 > " "Search themes > ")" --with-nth=1 --delimiter='\t' | cut -f2)
+    [[ -n $chosen_theme ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    sys::termux_apply_web_theme "$chosen_theme"
+}
+menu::t::t::title() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
+menu::t::tt() {
+    app::set_deps fzf || return 1
+
+    local cached=$(cd "$path_cache_themes" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
+    [[ -n $cached ]] || {
+        i18n::printf "没有已缓存的主题: %s\n" "No cached themes: %s\n" "$path_cache_themes"
+        return 1
+    }
+
+    local chosen=$(printf '%s\n' "$cached" | awk '{full=$0; sub(/\.properties$/,""); print $0 "\t" full}' | fzf --prompt="$(i18n::printf "搜索已缓存主题 > " "Search cached themes > ")" --with-nth=1 --delimiter='\t' | cut -f2)
+    [[ -n $chosen ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    sys::termux_apply_web_theme "$chosen"
+}
+menu::t::tt::title() { i18n::printf -v "$1" "${_cat3} 浏览已缓存的主题${_faint}（~/.termux/cache）${_off}" "${_cat3} Browse cached themes${_faint} (~/.termux/cache)${_off}"; }
+
+# ---- 按键布局菜单 ----
+menu::k() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 浏览/探索/更改按键布局${_off}" "${_cat4}${_memu_hl}󰌓 Browse / discover / change keymaps${_off}"; }
+menu::k::b() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::k::b::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}󰆋 Preview keymaps in browser${_faint} (miniyu157/Hello-Termux)${_off}"; }
+menu::k::k1() { sys::termux_apply_keymap "Enhanced.properties"; }
+menu::k::k1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
+menu::k::k() {
     app::set_deps fzf || return 1
 
     local keymap_list
@@ -284,64 +375,27 @@ menu::root::k() {
     }
     sys::termux_apply_keymap "$chosen"
 }
-menu::root::k::title() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
+menu::k::k::title() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
+menu::k::kk() {
+    app::set_deps fzf || return 1
 
-menu::root::tb() { sys::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
-menu::root::tb::title() { i18n::printf -v "$1" "${_cat3}󰆋 在浏览器预览颜色主题${_off}" "${_cat3}󰆋 Preview color themes in browser${_off}"; }
+    local cached=$(cd "$path_cache_keymaps" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
+    [[ -n $cached ]] || {
+        i18n::printf "没有已缓存的按键布局: %s\n" "No cached keymaps: %s\n" "$path_cache_keymaps"
+        return 1
+    }
 
-menu::root::tt() { sys::termux_apply_web_theme "Dracula+.properties"; }
-menu::root::tt::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
+    local chosen=$(printf '%s\n' "$cached" | awk '{full=$0; sub(/\.properties$/,""); print $0 "\t" full}' | fzf --prompt="$(i18n::printf "搜索已缓存按键布局 > " "Search cached keymaps > ")" --with-nth=1 --delimiter='\t' | cut -f2)
+    [[ -n $chosen ]] || {
+        MENU_QUICK=1
+        return 1
+    }
 
-menu::root::fb() { sys::open_url "https://www.programmingfonts.org/#oxproto"; }
-menu::root::fb::title() { i18n::printf -v "$1" "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
-
-menu::root::ff() { sys::termux_apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf"; }
-menu::root::ff::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
-
-menu::root::kb() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
-menu::root::kb::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按键布局${_off}" "${_cat4}󰆋 Preview keymaps in browser${_off}"; }
-
-menu::root::kk() { sys::termux_apply_keymap "Enhanced.properties"; }
-menu::root::kk::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
-
-# 检查 fisher 插件是否已安装
-# $1  插件名（如 gazorby/fifc）
-# 返回 0=已安装  1=未安装  2=fisher 不可用  127=fish 不可用
-pure::fisher_plugin_installed() {
-    local plugin="$1" list
-    command -v fish > /dev/null 2>&1 || return 127
-    list=$(fish -c "fisher list" 2> /dev/null)
-    [[ -n $list ]] || return 2
-    grep -iqF "$plugin" <<< "$list" && return 0
-    return 1
+    sys::termux_apply_keymap "$chosen"
 }
+menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按键布局${_faint}（~/.termux/cache）${_off}" "${_cat4} Browse cached keymaps${_faint} (~/.termux/cache)${_off}"; }
 
-# ---- fish 配置 ----
-
-# 获取 fisher 插件安装状态的 i18n 文本
-# $1  插件名
-pure::fisher_plugin_status() {
-    local rc
-    pure::fisher_plugin_installed "$1"
-    rc=$?
-    case $rc in
-        0) i18n::printf "已安装" "installed" ;;
-        127) i18n::printf "fish 不可用" "fish unavailable" ;;
-        2) i18n::printf "fisher 不可用" "fisher unavailable" ;;
-        *) i18n::printf "未安装" "not installed" ;;
-    esac
-}
-
-# 获取命令是否可用的 i18n 状态文本
-# $1  命令名
-pure::command_status() {
-    local _v="${2:-}"
-    if command -v "$1" > /dev/null 2>&1; then
-        i18n::printf ${_v:+-v "$_v"} "已安装" "installed"
-    else
-        i18n::printf ${_v:+-v "$_v"} "未安装" "not installed"
-    fi
-}
+# ---- fish 安装 ----
 
 menu::root::fish() {
     app::set_deps fish || return 1
@@ -353,8 +407,9 @@ menu::root::fish::title() {
     i18n::printf -v "$1" "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$_status"
 }
 
-menu::ffff() { i18n::printf -v "$1" "${_green}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}󰻳 About fish's fisher plugins${_off}"; }
+# ---- fish 插件 ----
 
+menu::ffff() { i18n::printf -v "$1" "${_green}${_memu_hl}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}${_memu_hl}󰻳 About fish's fisher plugins${_off}"; }
 menu::ffff::f() {
     local fisher_func="$HOME/.config/fish/functions/fisher.fish"
     if [[ ! -f $fisher_func ]]; then
@@ -363,15 +418,14 @@ menu::ffff::f() {
     i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以用于卸载自身。\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n"
 }
 menu::ffff::f::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "jorgebucaran/fisher")"; }
-
 menu::ffff::a() { fish -c "fisher install gazorby/fifc"; }
 menu::ffff::a::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "gazorby/fifc")"; }
-
 menu::ffff::b() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
 menu::ffff::b::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(pure::fisher_plugin_status "IlanCosman/tide")"; }
 
-menu::sh() { i18n::printf -v "$1" "${_purple} 更多 Shell 辅助套件${_off}" "${_purple} More Shell utilities${_off}"; }
+# ---- Shell 辅助套件 ----
 
+menu::sh() { i18n::printf -v "$1" "${_purple} 更多 Shell 辅助套件${_off}" "${_purple} More Shell utilities${_off}"; }
 menu::sh::eza() {
     app::set_deps eza gum || return 1
 
@@ -401,7 +455,6 @@ menu::sh::eza() {
     pure::write_shell_config "$config" "$content" "$shell"
 }
 menu::sh::eza::title() { i18n::printf -v "$1" "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
-
 menu::sh::zox() {
     app::set_deps zoxide gum || return 1
 
@@ -435,7 +488,6 @@ end
     pure::write_shell_config "$config" "$content" "$shell"
 }
 menu::sh::zox::title() { i18n::printf -v "$1" "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
-
 menu::sh::atu() {
     app::set_deps atuin gum || return 1
 
@@ -469,6 +521,8 @@ end
     pure::write_shell_config "$config" "$content" "$shell"
 }
 menu::sh::atu::title() { i18n::printf -v "$1" "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
+
+# ---- 程序设置 ----
 
 menu::root::s() {
     case "$APP_RESOURCE_SERVICE" in
@@ -511,19 +565,20 @@ menu::root::cl() {
     mkdir -p "$path_cache_dir"
     i18n::printf "清理: %s\n" "Cleared: %s\n" "$path_cache_dir"
 }
-menu::root::cl::title() { i18n::printf -v "$1" " 清除下载缓存${_faint}（TTL: 30天）${_off}" " Clear download cache${_faint} (TTL: 30 days)${_off}"; }
+menu::root::cl::title() { i18n::printf -v "$1" " 清除缓存目录${_faint}（~/.cache/hello-termux）${_off}" " Clear cache directory${_faint} (~/.cache/hello-termux)${_off}"; }
 
 menu::root::is() { sys::open_url "https://github.com/miniyu157/hello-termux/issues"; }
 menu::root::is::title() { i18n::printf -v "$1" "󰭻 前往 Issues 页面" "󰭻 Go to Issues page"; }
 
 menu::root::gh() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
-menu::root::gh::title() { i18n::printf -v "$1" "󰊤 前往 Hello Termux 的仓库" "󰊤 Go to Hello Termux repository"; }
+menu::root::gh::title() { i18n::printf -v "$1" "󰊤 前往源代码仓库" "󰊤 Go to source repository"; }
 
 menu::root::q() { exit 0; }
 menu::root::q::title() { i18n::printf -v "$1" "󰩈 退出程序" "󰩈 Exit"; }
 
 menu::root() { printf -v "$1" '%b\n%b' "Hello Termux${_off}" "${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
-# -- i18n --
+
+# ---- i18n ----
 
 app::set_lang() {
     [[ -n ${APP_LANG} ]] && return
@@ -744,9 +799,12 @@ app::set_resource_service github.com
 
 app::loop_menu '(root
 m  mc  u
-f  fb  ff
-t  tb  tt
-k  kb  kk
+(f 
+  f ff b f1 f2)
+(t
+  t tt b t1 t2)
+(k
+  k kk b k1)
 fish
 (ffff
   f  a  b)
