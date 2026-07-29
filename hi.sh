@@ -246,6 +246,7 @@ pure::command_status() {
 }
 
 # ==== 业务菜单函数开始 ====
+menu::root() { printf -v "$1" '%b\n%b' "Hello Termux${_off}" "${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
 
 menu::root::m() { termux-change-repo; }
 menu::root::m::title() {
@@ -579,8 +580,6 @@ menu::root::gh::title() { i18n::printf -v "$1" "󰊤 前往源代码仓库" "�
 
 menu::root::q() { exit 0; }
 menu::root::q::title() { i18n::printf -v "$1" "󰩈 退出程序" "󰩈 Exit"; }
-
-menu::root() { printf -v "$1" '%b\n%b' "Hello Termux${_off}" "${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
 
 # ---- i18n ----
 
