@@ -135,7 +135,19 @@ sys::io::write_user_config() {
     local config="$1" content="$2"
 
     [[ -f $config ]] && [[ "$(< "$config")" == *"$content"* ]] && {
-        i18n::printf "${_cat4}已有完全相同的配置，无需修改。${_off}\n" "${_cat4}Already configured, no changes.${_off}\n"
+        local _range=$(_content="$content" awk '
+            { h = h $0 "\n" }
+            END {
+                n = ENVIRON["_content"]
+                if (p = index(h, n)) {
+                    b = substr(h, 1, p - 1); s = gsub(/\n/, "&", b) + 1
+                    print s, s + gsub(/\n/, "&", n)
+                }
+            }
+        ' "$config")
+        i18n::printf "${_cat4}已有完全相同的配置 (L%s-L%s): %s。\n未修改。${_off}\n" \
+            "${_cat4}Already configured (L%s-L%s): %s.\nNo changes.${_off}\n" \
+            "${_range%% *}" "${_range##* }" "$config"
         return 1
     }
 
