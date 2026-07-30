@@ -66,7 +66,7 @@ app::set_paths() {
     mkdir -p "$path_cache_dir" "$path_cache_themes" "$path_cache_fonts" "$path_cache_keymaps"
 }
 
-app::set_deps() {
+sys::set_deps() {
     local missing=()
     for dep in "$@"; do
         command -v "$dep" > /dev/null 2>&1 || missing+=("$dep")
@@ -79,7 +79,7 @@ app::set_deps() {
     }
 }
 
-pure::fetch_cached() {
+sys::io::fetch_cached() {
     local -n _ref_out="$1"
     local cache="$2" url="$3" ttl="${4:-30}"
 
@@ -91,7 +91,7 @@ pure::fetch_cached() {
     fi
 }
 
-pure::cache_resource() {
+sys::io::cache_resource() {
     local cache_dir="$1" name="$2" url="$3"
     local dest="${cache_dir}/${name}"
     [[ -f $dest ]] && return 0
@@ -100,21 +100,43 @@ pure::cache_resource() {
 }
 
 # Swap two files
-pure::swap_file() {
+sys::io::swap_file() {
     local a="$1" b="$2" tmp=$(mktemp "$path_termux_tmp/ht_XXXXX")
     mv "$a" "$tmp" && mv "$b" "$a" && mv "$tmp" "$b"
 }
 
-# 将内容块写入 shell 配置文件（完整性检查、diff 预览、用户确认、原子写入）
+# 扫描目标路径，如已有工具痕迹则显示提示，始终放行
+# $1: 扫描目标（文件或目录路径）
+# $2: grep -E 模式
+sys::io::warn_existing_config() {
+    local scan_target="$1" pattern="$2"
+    local scan=$(grep -rn -C 1 -E "$pattern" "$scan_target" 2> /dev/null |
+        awk -v g="$_green" -v o="$_off" '
+        /^--$/ { next }
+        match($0, /[-:][0-9]+[-:]/) {
+            f = substr($0, 1, RSTART-1)
+            r = substr($0, RSTART); sub(/^[-:]/, "", r); sub(/[-:]$/, "", r)
+            sub(/^[0-9]+/, g "&" o, r)
+            if (f != c) { c = f; print c ":" }
+            print "  " r
+        }
+    ')
+
+    if [[ -n $scan ]]; then
+        i18n::printf "${_cat4}警告: 在以下位置发现已有配置：${_off}\n" "${_cat4}Warning: existing config found at:${_off}\n"
+        printf '%s\n' "$scan"
+    fi
+}
+
+# 将内容块写入配置文件（完整性检查、diff 预览、用户确认、原子写入）
 # $1: 配置文件路径
 # $2: 完整内容块
-# $3: shell 名称
-pure::write_shell_config() {
-    local config="$1" content="$2" shell="$3"
+sys::io::write_user_config() {
+    local config="$1" content="$2"
 
     if [[ -f $config ]] && grep -zqF "$content" "$config" 2> /dev/null; then
         i18n::printf "${_cat4}已有完全相同的配置，无需修改。${_off}\n" "${_cat4}Already configured, no changes.${_off}\n"
-        return 0
+        return 1
     fi
 
     mkdir -p "$(dirname "$config")"
@@ -134,51 +156,30 @@ pure::write_shell_config() {
     }
 
     if [[ -f $config ]]; then
-        pure::swap_file "$tmp" "$config"
+        sys::io::swap_file "$tmp" "$config"
         i18n::printf "修改前的配置位于 %s\n" "Previous config saved at %s\n" "$tmp"
     else
         mv "$tmp" "$config"
         i18n::printf "已新建文件: %s\n" "Created new file: %s\n" "$config"
     fi
-    i18n_msg::shell_changed "$shell"
 }
 
-# 扫描 shell 配置，如已有工具痕迹则显示提示，始终放行
-# $1: shell (bash/fish)
+# 编排 warn_existing_config + write_user_config 的组合写入
+# $1: 扫描目标（文件或目录路径）
 # $2: grep -E 模式
-# $3: 工具名
-pure::warn_existing_config() {
-    local shell="$1" pattern="$2" tool="$3"
-    local scan_target
-    case "$shell" in
-        bash) scan_target="$HOME/.bashrc" ;;
-        fish) scan_target="$HOME/.config/fish/" ;;
-    esac
-
-    local scan
-    scan=$(grep -rn -C 1 -E "$pattern" "$scan_target" 2> /dev/null |
-        awk -v g="$_green" -v o="$_off" '
-        /^--$/ { next }
-        match($0, /[-:][0-9]+[-:]/) {
-            f = substr($0, 1, RSTART-1)
-            r = substr($0, RSTART); sub(/^[-:]/, "", r); sub(/[-:]$/, "", r)
-            sub(/^[0-9]+/, g "&" o, r)
-            if (f != c) { c = f; print c ":" }
-            print "  " r
-        }
-    ')
-
-    if [[ -n $scan ]]; then
-        i18n::printf "${_cat4}警告: 在以下位置发现已有的 %s 配置：${_off}\n" "${_cat4}Warning: existing %s config found at:${_off}\n" "$tool"
-        printf '%s\n' "$scan"
-    fi
+# $3: 配置文件路径
+# $4: 完整内容块
+sys::io::write_config() {
+    local scan_target="$1" pattern="$2" config="$3" content="$4"
+    sys::io::warn_existing_config "$scan_target" "$pattern"
+    sys::io::write_user_config "$config" "$content"
 }
 
 # 应用一个 nerd font 字体
 # $1  用于拼接仓库的后缀
 sys::termux_apply_nerd_font() {
     local name="$1"
-    pure::cache_resource "$path_cache_fonts" "$name" \
+    sys::io::cache_resource "$path_cache_fonts" "$name" \
         "${URL_font_prefix}/${name}" || return 1
     cp -f "$path_cache_fonts/$name" "$path_termux_font_ttf"
     termux-reload-settings
@@ -189,7 +190,7 @@ sys::termux_apply_nerd_font() {
 # $1  主题名称（用于拼接 URL 后缀）
 sys::termux_apply_web_theme() {
     local name="$1"
-    pure::cache_resource "$path_cache_themes" "$name" \
+    sys::io::cache_resource "$path_cache_themes" "$name" \
         "${URL_theme_prefix}/${name// /%20}" || return 1
     cp -f "$path_cache_themes/$name" "$path_termux_colors_properties"
     termux-reload-settings
@@ -200,7 +201,7 @@ sys::termux_apply_web_theme() {
 # $1  按键布局名称（用于拼接 URL 后缀）
 sys::termux_apply_keymap() {
     local name="$1"
-    pure::cache_resource "$path_cache_keymaps" "$name" \
+    sys::io::cache_resource "$path_cache_keymaps" "$name" \
         "${URL_keymap_prefix}/${name// /%20}" || return 1
     cp -f "$path_cache_keymaps/$name" "$path_termux_key_properties"
     termux-reload-settings
@@ -273,10 +274,10 @@ menu::f::f1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTer
 menu::f::f2() { sys::termux_apply_nerd_font "IosevkaTerm/IosevkaTermNerdFont-BoldItalic.ttf"; }
 menu::f::f2::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font Bold Italic${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font Bold Italic${_off}"; }
 menu::f::f() {
-    app::set_deps fzf || return 1
+    sys::set_deps fzf || return 1
 
     local font_list
-    pure::fetch_cached font_list "$path_cache_font_list" "$URL_font_list" || {
+    sys::io::fetch_cached font_list "$path_cache_font_list" "$URL_font_list" || {
         i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$URL_font_list"
         return 1
     }
@@ -291,7 +292,7 @@ menu::f::f() {
 }
 menu::f::f::title() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
 menu::f::ff() {
-    app::set_deps fzf || return 1
+    sys::set_deps fzf || return 1
 
     local cached=$(cd "$path_cache_fonts" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
     [[ -n $cached ]] || {
@@ -318,10 +319,10 @@ menu::t::t1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ �
 menu::t::t2() { sys::termux_apply_web_theme "Gruvbox Dark.properties"; }
 menu::t::t2::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Gruvbox Dark 主题${_off}" "${_cat3} Quick-apply Gruvbox Dark${_off}"; }
 menu::t::t() {
-    app::set_deps fzf || return 1
+    sys::set_deps fzf || return 1
 
     local theme_list
-    pure::fetch_cached theme_list "$path_cache_theme_list" "$URL_theme_list" || {
+    sys::io::fetch_cached theme_list "$path_cache_theme_list" "$URL_theme_list" || {
         i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$URL_theme_list"
         return 1
     }
@@ -336,7 +337,7 @@ menu::t::t() {
 }
 menu::t::t::title() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 menu::t::tt() {
-    app::set_deps fzf || return 1
+    sys::set_deps fzf || return 1
 
     local cached=$(cd "$path_cache_themes" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
     [[ -n $cached ]] || {
@@ -361,10 +362,10 @@ menu::k::b::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按�
 menu::k::k1() { sys::termux_apply_keymap "Enhanced.properties"; }
 menu::k::k1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 menu::k::k() {
-    app::set_deps fzf || return 1
+    sys::set_deps fzf || return 1
 
     local keymap_list
-    pure::fetch_cached keymap_list "$path_cache_keymap_list" "$URL_keymap_list" || {
+    sys::io::fetch_cached keymap_list "$path_cache_keymap_list" "$URL_keymap_list" || {
         i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$URL_keymap_list"
         return 1
     }
@@ -378,7 +379,7 @@ menu::k::k() {
 }
 menu::k::k::title() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
 menu::k::kk() {
-    app::set_deps fzf || return 1
+    sys::set_deps fzf || return 1
 
     local cached=$(cd "$path_cache_keymaps" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
     [[ -n $cached ]] || {
@@ -399,7 +400,7 @@ menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按�
 # ---- fish 安装 ----
 
 menu::root::fish() {
-    app::set_deps fish || return 1
+    sys::set_deps fish || return 1
     chsh -s fish && i18n_msg::shell_changed fish
 }
 menu::root::fish::title() {
@@ -432,7 +433,7 @@ ${_faint}将显示 diff 更改供审阅，自动备份旧配置${_off}" \
     "${_purple}${_memu_hl} More Shell utilities${_off}
 ${_faint}Shows diff before applying, auto-backs up old config${_off}"; }
 menu::sh::eza() {
-    app::set_deps eza gum || return 1
+    sys::set_deps eza gum || return 1
 
     local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "eza")" bash fish)
     [[ -n $shell ]] || {
@@ -444,24 +445,29 @@ menu::sh::eza() {
     local cache="$path_cache_dir/eza_alias_${shell}"
 
     local content
-    pure::fetch_cached content "$cache" "$remote" || {
+    sys::io::fetch_cached content "$cache" "$remote" || {
         i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$remote"
         return 1
     }
 
-    local config
+    local config scan_target
     case "$shell" in
-        bash) config="$HOME/.bashrc" ;;
-        fish) config="$HOME/.config/fish/conf.d/eza_alias.fish" ;;
+        bash)
+            config="$HOME/.bashrc"
+            scan_target="$HOME/.bashrc"
+            ;;
+        fish)
+            config="$HOME/.config/fish/conf.d/eza_alias.fish"
+            scan_target="$HOME/.config/fish/"
+            ;;
     esac
 
-    pure::warn_existing_config "$shell" 'alias.*eza' 'eza'
-
-    pure::write_shell_config "$config" "$content" "$shell"
+    sys::io::write_config "$scan_target" 'alias.*eza' "$config" "$content" &&
+        i18n_msg::shell_changed "$shell"
 }
 menu::sh::eza::title() { i18n::printf -v "$1" "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
 menu::sh::zox() {
-    app::set_deps zoxide gum || return 1
+    sys::set_deps zoxide gum || return 1
 
     local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "zoxide")" bash fish)
     [[ -n $shell ]] || {
@@ -469,10 +475,11 @@ menu::sh::zox() {
         return 1
     }
 
-    local config content
+    local config content scan_target
     case "$shell" in
         bash)
             config="$HOME/.bashrc"
+            scan_target="$HOME/.bashrc"
             # shellcheck disable=SC2016
             content='# -- zoxide init {{ --
 eval "$(zoxide init bash)"
@@ -480,6 +487,7 @@ eval "$(zoxide init bash)"
             ;;
         fish)
             config="$HOME/.config/fish/conf.d/zoxide.fish"
+            scan_target="$HOME/.config/fish/"
             content='# -- zoxide init {{ --
 if status is-interactive
     zoxide init fish | source
@@ -488,13 +496,12 @@ end
             ;;
     esac
 
-    pure::warn_existing_config "$shell" 'zoxide init' 'zoxide'
-
-    pure::write_shell_config "$config" "$content" "$shell"
+    sys::io::write_config "$scan_target" 'zoxide init' "$config" "$content" &&
+        i18n_msg::shell_changed "$shell"
 }
 menu::sh::zox::title() { i18n::printf -v "$1" "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
 menu::sh::atu() {
-    app::set_deps atuin gum || return 1
+    sys::set_deps atuin gum || return 1
 
     local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "atuin")" bash fish)
     [[ -n $shell ]] || {
@@ -502,10 +509,11 @@ menu::sh::atu() {
         return 1
     }
 
-    local config content
+    local config content scan_target
     case "$shell" in
         bash)
             config="$HOME/.bashrc"
+            scan_target="$HOME/.bashrc"
             # shellcheck disable=SC2016
             content='# -- atuin init {{ --
 eval "$(atuin init bash --disable-up-arrow)"
@@ -513,6 +521,7 @@ eval "$(atuin init bash --disable-up-arrow)"
             ;;
         fish)
             config="$HOME/.config/fish/conf.d/atuin.fish"
+            scan_target="$HOME/.config/fish/"
             content='# -- atuin init {{ --
 if status is-interactive
     atuin init fish --disable-up-arrow | source
@@ -521,9 +530,8 @@ end
             ;;
     esac
 
-    pure::warn_existing_config "$shell" 'atuin init' 'atuin'
-
-    pure::write_shell_config "$config" "$content" "$shell"
+    sys::io::write_config "$scan_target" 'atuin init' "$config" "$content" &&
+        i18n_msg::shell_changed "$shell"
 }
 menu::sh::atu::title() { i18n::printf -v "$1" "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
 
@@ -585,8 +593,7 @@ menu::root::q::title() { i18n::printf -v "$1" "󰩈 退出程序" "󰩈 Exit"; }
 
 app::set_lang() {
     [[ -n ${APP_LANG} ]] && return
-    local android_locale
-    android_locale="$(getprop persist.sys.locale 2> /dev/null)"
+    local android_locale="$(getprop persist.sys.locale 2> /dev/null)"
 
     if [[ $android_locale == zh-* ]] || [[ ${LANG:-} == zh_* ]]; then
         APP_LANG="zh"
