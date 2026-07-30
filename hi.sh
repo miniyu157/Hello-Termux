@@ -134,10 +134,10 @@ sys::io::warn_existing_config() {
 sys::io::write_user_config() {
     local config="$1" content="$2"
 
-    if [[ -f $config ]] && grep -zqF "$content" "$config" 2> /dev/null; then
+    [[ -f $config ]] && [[ "$(< "$config")" == *"$content"* ]] && {
         i18n::printf "${_cat4}已有完全相同的配置，无需修改。${_off}\n" "${_cat4}Already configured, no changes.${_off}\n"
         return 1
-    fi
+    }
 
     mkdir -p "$(dirname "$config")"
     local tmp=$(mktemp "$path_termux_tmp/ht_XXXXX.tmp")
