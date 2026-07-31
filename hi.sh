@@ -320,10 +320,10 @@ menu::root::u::title() { i18n::printf -v "$1" "${_cat1}󰏕 更新和升级软�
 menu::f() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 浏览/探索/更改字体${_off}" "${_cat2}${_memu_hl} Browse / discover / change fonts${_off}"; }
 menu::f::b() { void::open_url "https://www.programmingfonts.org/#oxproto"; }
 menu::f::b::title() { i18n::printf -v "$1" "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
-menu::f::f1() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
-menu::f::f1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
-menu::f::f2() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-BoldItalic.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
-menu::f::f2::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font Bold Italic${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font Bold Italic${_off}"; }
+menu::f::1() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
+menu::f::1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
+menu::f::2() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-BoldItalic.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
+menu::f::2::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font Bold Italic${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font Bold Italic${_off}"; }
 menu::f::f() {
     local chosen
     chosen=$(out::fzf_tsv_pick font_list.tsv "搜索字体 > " "Search fonts > ") || return 1
@@ -341,10 +341,10 @@ menu::f::ff::title() { i18n::printf -v "$1" "${_cat2} 浏览已缓存的字�
 menu::t() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 浏览/探索/更改颜色主题${_off}" "${_cat3}${_memu_hl} Browse / discover / change color themes${_off}"; }
 menu::t::b() { void::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
 menu::t::b::title() { i18n::printf -v "$1" "${_cat3}󰆋 在浏览器预览颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}󰆋 Preview color themes in browser${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
-menu::t::t1() { do::termux_apply_resource "Dracula+.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
-menu::t::t1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
-menu::t::t2() { do::termux_apply_resource "Gruvbox Dark.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
-menu::t::t2::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Gruvbox Dark 主题${_off}" "${_cat3} Quick-apply Gruvbox Dark${_off}"; }
+menu::t::1() { do::termux_apply_resource "Dracula+.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
+menu::t::1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
+menu::t::2() { do::termux_apply_resource "Gruvbox Dark.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
+menu::t::2::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Gruvbox Dark 主题${_off}" "${_cat3} Quick-apply Gruvbox Dark${_off}"; }
 menu::t::t() {
     local chosen
     chosen=$(out::fzf_tsv_pick theme_list.tsv "搜索主题 > " "Search themes > ") || return 1
@@ -362,8 +362,8 @@ menu::t::tt::title() { i18n::printf -v "$1" "${_cat3} 浏览已缓存的主�
 menu::k() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 浏览/探索/更改按键布局${_off}" "${_cat4}${_memu_hl}󰌓 Browse / discover / change keymaps${_off}"; }
 menu::k::b() { void::open_url "https://github.com/miniyu157/hello-termux"; }
 menu::k::b::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}󰆋 Preview keymaps in browser${_faint} (miniyu157/Hello-Termux)${_off}"; }
-menu::k::k1() { do::termux_apply_resource "Enhanced.properties" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"; }
-menu::k::k1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
+menu::k::1() { do::termux_apply_resource "Enhanced.properties" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"; }
+menu::k::1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 menu::k::k() {
     local chosen
     chosen=$(out::fzf_tsv_pick keymap_list.tsv "搜索按键布局 > " "Search keymaps > ") || return 1
@@ -379,8 +379,8 @@ menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按�
 
 # ---- fish 安装 ----
 
-menu::root::fish() { do::set_deps fish && chsh -s fish && i18n_msg::shell_changed fish; }
-menu::root::fish::title() {
+menu::fish::i() { do::set_deps fish && chsh -s fish && i18n_msg::shell_changed fish; }
+menu::fish::i::title() {
     local _status=''
     out::command_status fish _status
     i18n::printf -v "$1" "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$_status"
@@ -388,19 +388,19 @@ menu::root::fish::title() {
 
 # ---- fish 插件 ----
 
-menu::ffff() { i18n::printf -v "$1" "${_green}${_memu_hl}󰻳 关于 fish 的 fisher 插件${_off}" "${_green}${_memu_hl}󰻳 About fish's fisher plugins${_off}"; }
-menu::ffff::f() {
+menu::fish() { i18n::printf -v "$1" "${_green}${_memu_hl}󰻳 了解友好交互的 fish + fisher${_off}" "${_green}${_memu_hl}󰻳 About the friendly interactive fish + fisher${_off}"; }
+menu::fish::ii() {
     local fisher_func="$HOME/.config/fish/functions/fisher.fish"
     if [[ ! -f $fisher_func ]]; then
         fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher" || return 1
     fi
     i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以用于卸载自身。\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n"
 }
-menu::ffff::f::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(out::fisher_plugin_status "jorgebucaran/fisher")"; }
-menu::ffff::a() { fish -c "fisher install gazorby/fifc"; }
-menu::ffff::a::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(out::fisher_plugin_status "gazorby/fifc")"; }
-menu::ffff::b() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
-menu::ffff::b::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(out::fisher_plugin_status "IlanCosman/tide")"; }
+menu::fish::ii::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(out::fisher_plugin_status "jorgebucaran/fisher")"; }
+menu::fish::1() { fish -c "fisher install gazorby/fifc"; }
+menu::fish::1::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(out::fisher_plugin_status "gazorby/fifc")"; }
+menu::fish::2() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
+menu::fish::2::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(out::fisher_plugin_status "IlanCosman/tide")"; }
 
 # ---- Shell 辅助套件 ----
 
@@ -776,18 +776,17 @@ app::set_resource_service github.com
 app::loop_menu '(root
       m  mc  u       ; Mirrors & updates.
       (f             ; Fonts
-        f ff b f1 f2)
+        f ff b 1 2)
       (t             ; Color themes
-        t tt b t1 t2)
+        t tt b 1 2)
       (k             ; Keymaps
-        k kk b k1)
-      fish           ; Install fish shell.
-      (ffff          ; Fisher plugins
-        f  a  b)
-      (sh            ; Shell extras (eza/zoxide/atuin)
-        eza  zox  atu)
+        k kk b 1)
+      (fish          ; Fish shell & fisher plugins
+        i  ii  1  2)
       (vim           ; Neovim + Lazyvim
         i  ii  1  2  3  4  5  6)
+      (sh            ; Shell extras (eza/zoxide/atuin)
+        eza  zox  atu)
       s  l  i        ; Switch server / Lang / Install
       cl  is  gh     ; Clear cache / Issues / Repo
       q              ; Exit
