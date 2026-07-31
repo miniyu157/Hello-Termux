@@ -117,7 +117,7 @@ do::swap_file() {
 # 扫描目标路径，如已有工具痕迹则显示提示，始终放行
 # $1: 扫描目标（文件或目录路径）
 # $2: grep -E 模式
-do::warn_existing_config() {
+void::warn_existing_config() {
     local scan_target="$1" pattern="$2"
     local scan=$(grep -rn -C 1 -E "$pattern" "$scan_target" 2> /dev/null |
         awk -v g="$_green" -v o="$_off" '
@@ -189,9 +189,9 @@ do::write_user_config() {
 # $3: grep -E 模式
 do::neovim_apply_config_cell() {
     local name="$1" config_path="$2" pattern="$3" _content
-    out::fetch_cached _content "$path_cache_config_cells_dir/vim/${name}" "${URL_config_cells_prefix}vim/${name}" &&
-        do::warn_existing_config ~/.config/nvim/ "$pattern" && do::write_user_config "$config_path" "$_content" &&
-        i18n_msg::nvim_config_changed
+    out::fetch_cached _content "$path_cache_config_cells_dir/vim/${name}" "${URL_config_cells_prefix}vim/${name}" || return 1
+    void::warn_existing_config ~/.config/nvim/ "$pattern"
+    do::write_user_config "$config_path" "$_content" && i18n_msg::nvim_config_changed
 }
 
 # 应用 Termux 资源。下载缓存 → 复制到目标 → 刷新 Termux 设置
@@ -252,7 +252,7 @@ out::choose_shell() {
     printf '%s\n' "$chosen"
 }
 
-sys::open_url() {
+void::open_url() {
     xdg-open "$1" || {
         i18n::printf "拉起 xdg-open 失败: %s\n" "Failed to open URL: %s\n" "$1"
         return 1
@@ -318,7 +318,7 @@ menu::root::u::title() { i18n::printf -v "$1" "${_cat1}󰏕 更新和升级软�
 
 # ---- 字体菜单 ----
 menu::f() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 浏览/探索/更改字体${_off}" "${_cat2}${_memu_hl} Browse / discover / change fonts${_off}"; }
-menu::f::b() { sys::open_url "https://www.programmingfonts.org/#oxproto"; }
+menu::f::b() { void::open_url "https://www.programmingfonts.org/#oxproto"; }
 menu::f::b::title() { i18n::printf -v "$1" "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
 menu::f::f1() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
 menu::f::f1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
@@ -339,7 +339,7 @@ menu::f::ff::title() { i18n::printf -v "$1" "${_cat2} 浏览已缓存的字�
 
 # ----颜色主题菜单 ----
 menu::t() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 浏览/探索/更改颜色主题${_off}" "${_cat3}${_memu_hl} Browse / discover / change color themes${_off}"; }
-menu::t::b() { sys::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
+menu::t::b() { void::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
 menu::t::b::title() { i18n::printf -v "$1" "${_cat3}󰆋 在浏览器预览颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}󰆋 Preview color themes in browser${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 menu::t::t1() { do::termux_apply_resource "Dracula+.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
 menu::t::t1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
@@ -360,7 +360,7 @@ menu::t::tt::title() { i18n::printf -v "$1" "${_cat3} 浏览已缓存的主�
 
 # ---- 按键布局菜单 ----
 menu::k() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 浏览/探索/更改按键布局${_off}" "${_cat4}${_memu_hl}󰌓 Browse / discover / change keymaps${_off}"; }
-menu::k::b() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::k::b() { void::open_url "https://github.com/miniyu157/hello-termux"; }
 menu::k::b::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}󰆋 Preview keymaps in browser${_faint} (miniyu157/Hello-Termux)${_off}"; }
 menu::k::k1() { do::termux_apply_resource "Enhanced.properties" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"; }
 menu::k::k1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
@@ -420,8 +420,8 @@ menu::sh::eza() {
         fish) config="$HOME/.config/fish/conf.d/eza_alias.fish" scan_target="$HOME/.config/fish/" ;;
     esac
 
-    do::warn_existing_config "$scan_target" 'alias.*eza' && do::write_user_config "$config" "$content" &&
-        i18n_msg::shell_changed "$shell"
+    void::warn_existing_config "$scan_target" 'alias.*eza'
+    do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
 }
 menu::sh::eza::title() { i18n::printf -v "$1" "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
 menu::sh::zox() {
@@ -435,8 +435,8 @@ menu::sh::zox() {
         fish) config="$HOME/.config/fish/conf.d/zoxide_init.fish" scan_target="$HOME/.config/fish/" ;;
     esac
 
-    do::warn_existing_config "$scan_target" 'zoxide init' && do::write_user_config "$config" "$content" &&
-        i18n_msg::shell_changed "$shell"
+    void::warn_existing_config "$scan_target" 'zoxide init'
+    do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
 }
 menu::sh::zox::title() { i18n::printf -v "$1" "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
 menu::sh::atu() {
@@ -450,8 +450,8 @@ menu::sh::atu() {
         fish) config="$HOME/.config/fish/conf.d/atuin_init.fish" scan_target="$HOME/.config/fish/" ;;
     esac
 
-    do::warn_existing_config "$scan_target" 'atuin init' && do::write_user_config "$config" "$content" &&
-        i18n_msg::shell_changed "$shell"
+    void::warn_existing_config "$scan_target" 'atuin init'
+    do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
 }
 menu::sh::atu::title() { i18n::printf -v "$1" "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
 
@@ -479,19 +479,14 @@ menu::vim::ii::title() {
 
 menu::vim::1() { do::neovim_apply_config_cell keymaps.lua ~/.config/nvim/lua/config/keymaps.lua 'nvim_create_user_command'; }
 menu::vim::1::title() { i18n::printf -v "$1" "${_vimcolor}使 :w :wq :q :qa 忽略大小写${_off}" "${_vimcolor}Make :w :wq :q :qa case-insensitive${_off}"; }
-
 menu::vim::2() { do::neovim_apply_config_cell blink.lua ~/.config/nvim/lua/plugins/blink.lua 'select_and_accept'; }
 menu::vim::2::title() { i18n::printf -v "$1" "${_vimcolor}补全键换为 Tab${_off}" "${_vimcolor}Use Tab for completion${_off}"; }
-
 menu::vim::3() { do::neovim_apply_config_cell suda.lua ~/.config/nvim/lua/plugins/suda.lua 'suda_smart_edit'; }
 menu::vim::3::title() { i18n::printf -v "$1" "${_vimcolor}安装 suda 插件，使鉴权在编辑器内完成${_off}" "${_vimcolor}Install suda.vim to keep auth within the editor${_off}"; }
-
 menu::vim::4() { do::neovim_apply_config_cell autocmds.lua ~/.config/nvim/lua/config/autocmds.lua 'lazyvim_wrap_spell'; }
 menu::vim::4::title() { i18n::printf -v "$1" "${_vimcolor}编辑 markdown/gitcommit 时禁用拼写检查并自动换行${_off}" "${_vimcolor}Disable spell check & enable wrap when editing markdown/gitcommit${_off}"; }
-
 menu::vim::5() { do::neovim_apply_config_cell options_listchars.lua ~/.config/nvim/lua/config/options.lua listchars; }
 menu::vim::5::title() { i18n::printf -v "$1" "${_vimcolor}空格显示为点号以高亮${_off}" "${_vimcolor}Highlight spaces as dots${_off}"; }
-
 menu::vim::6() { do::neovim_apply_config_cell options_clipboard.lua ~/.config/nvim/lua/config/options.lua 'termux-clipboard-set'; }
 menu::vim::6::title() { i18n::printf -v "$1" "${_vimcolor}写入 termux-api 的剪贴板配置${_off}" "${_vimcolor}Write termux-api clipboard config${_off}"; }
 
@@ -535,10 +530,10 @@ menu::root::l::title() { i18n::printf -v "$1" " 切换语言${_faint}（目�
 menu::root::cl() { rm -rf "$path_cache_dir" && mkdir -p "$path_cache_dir" && i18n::printf "清理: %s\n" "Cleared: %s\n" "$path_cache_dir"; }
 menu::root::cl::title() { i18n::printf -v "$1" " 清除缓存目录${_faint}（~/.cache/hello-termux）${_off}" " Clear cache directory${_faint} (~/.cache/hello-termux)${_off}"; }
 
-menu::root::is() { sys::open_url "https://github.com/miniyu157/hello-termux/issues"; }
+menu::root::is() { void::open_url "https://github.com/miniyu157/hello-termux/issues"; }
 menu::root::is::title() { i18n::printf -v "$1" "󰭻 前往 Issues 页面" "󰭻 Go to Issues page"; }
 
-menu::root::gh() { sys::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::root::gh() { void::open_url "https://github.com/miniyu157/hello-termux"; }
 menu::root::gh::title() { i18n::printf -v "$1" "󰊤 前往源代码仓库" "󰊤 Go to source repository"; }
 
 menu::root::q() { exit 0; }
