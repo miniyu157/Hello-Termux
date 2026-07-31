@@ -75,7 +75,7 @@ do::set_deps() {
     }
 }
 
-io::fetch_cached() {
+out::fetch_cached() {
     local -n _ref_out="$1"
     local cache="$2" url="$3" ttl="${4:-30}"
 
@@ -83,7 +83,7 @@ io::fetch_cached() {
         _ref_out=$(< "$cache")
     else
         _ref_out=$(curl -#L "$url") || {
-            i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$url"
+            i18n::printf "拉取失败: %s\n" "Failed to fetch: %s\n" "$url" >&2
             return 1
         }
         mkdir -p "$(dirname "$cache")"
@@ -101,7 +101,7 @@ do::cache_resource() {
 }
 
 # 列出目录下文件（不含 .tmp），空则返回 1
-sys::list_dir_files() {
+out::list_dir_files() {
     local dir="$1" output
     output=$(cd "$dir" 2> /dev/null && find . -type f ! -name '*.tmp' | sed 's|^\./||' | sort)
     [[ -n $output ]] || return 1
@@ -187,7 +187,7 @@ do::write_user_config() {
 # $3: grep -E 模式
 do::neovim_apply_config_cell() {
     local name="$1" config_path="$2" pattern="$3" _content
-    io::fetch_cached _content "$path_cache_config_cells_dir/vim/${name}" "${URL_config_cells_prefix}vim/${name}" &&
+    out::fetch_cached _content "$path_cache_config_cells_dir/vim/${name}" "${URL_config_cells_prefix}vim/${name}" &&
         do::warn_existing_config ~/.config/nvim/ "$pattern" && do::write_user_config "$config_path" "$_content" &&
         i18n_msg::nvim_config_changed
 }
@@ -205,6 +205,37 @@ do::termux_apply_resource() {
         i18n::printf "已应用 %s → %s\n" "Applied %s → %s\n" "$remote_path" "$target"
 }
 
+# 从远程 TSV 列表 fzf 选择，stdout 输出选中的值（TSV 第二列）
+# $1: TSV 文件名    $2: fzf prompt 中文    $3: fzf prompt 英文
+out::fzf_tsv_pick() {
+    do::set_deps fzf >&2 || return 1
+    local _list
+    out::fetch_cached _list "$path_cache_res_lists_dir/$1" "$URL_res_lists_prefix/$1" || return 1
+    local _chosen=$(printf '%s\n' "$_list" | fzf --prompt="$(i18n::printf "$2" "$3")" --with-nth=1 --delimiter='\t' | cut -f2)
+    [[ -n $_chosen ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+    printf '%s\n' "$_chosen"
+}
+
+# 从本地目录 fzf 选择，stdout 输出选中的文件名
+# $1: 缓存目录路径    $2: fzf prompt 中文    $3: fzf prompt 英文
+out::fzf_dir_pick() {
+    do::set_deps fzf >&2 || return 1
+    local _list
+    _list=$(out::list_dir_files "$1") || {
+        i18n::printf "没有已缓存的资源: %s\n" "No cached resources: %s\n" "$1" >&2
+        return 1
+    }
+    local _chosen=$(printf '%s\n' "$_list" | fzf --prompt="$(i18n::printf "$2" "$3")")
+    [[ -n $_chosen ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+    printf '%s\n' "$_chosen"
+}
+
 sys::open_url() {
     xdg-open "$1" || {
         i18n::printf "拉起 xdg-open 失败: %s\n" "Failed to open URL: %s\n" "$1"
@@ -214,7 +245,7 @@ sys::open_url() {
 
 # 获取 fisher 插件安装状态的 i18n 文本
 # $1  插件名
-sys::fisher_plugin_status() {
+out::fisher_plugin_status() {
     local plugin="$1" list rc
     command -v fish > /dev/null 2>&1 || rc=127
     if [[ -z ${rc:-} ]]; then
@@ -234,7 +265,7 @@ sys::fisher_plugin_status() {
 }
 
 # 获取命令是否可用的 i18n 状态文本
-sys::command_status() {
+out::command_status() {
     local _v="${2:-}"
     if command -v "$1" > /dev/null 2>&1; then
         i18n::printf ${_v:+-v "$_v"} "已安装" "installed"
@@ -244,7 +275,7 @@ sys::command_status() {
 }
 
 # 通过文件是否存在获取 i18n 状态文本
-sys::command_status_by_file() {
+out::command_status_by_file() {
     local _v="${2:-}"
     if [[ -f $1 ]]; then
         i18n::printf ${_v:+-v "$_v"} "已安装" "installed"
@@ -278,35 +309,14 @@ menu::f::f1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTer
 menu::f::f2() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-BoldItalic.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
 menu::f::f2::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font Bold Italic${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font Bold Italic${_off}"; }
 menu::f::f() {
-    do::set_deps fzf || return 1
-
-    local font_list
-    io::fetch_cached font_list "$path_cache_res_lists_dir/font_list.tsv" "$URL_res_lists_prefix/font_list.tsv" || return 1
-
-    local chosen=$(printf '%s\n' "$font_list" | fzf --prompt="$(i18n::printf "搜索字体 > " "Search fonts > ")" --with-nth=1 --delimiter='\t' | cut -f2)
-    [[ -n $chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
+    local chosen
+    chosen=$(out::fzf_tsv_pick font_list.tsv "搜索字体 > " "Search fonts > ") || return 1
     do::termux_apply_resource "$chosen" fonts "$URL_font_prefix" "$path_termux_font_ttf"
 }
 menu::f::f::title() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
 menu::f::ff() {
-    do::set_deps fzf || return 1
-
-    local cached
-    cached=$(sys::list_dir_files "$path_termux_res_cache_dir/fonts") || {
-        i18n::printf "没有已缓存的字体: %s\n" "No cached fonts: %s\n" "$path_termux_res_cache_dir/fonts"
-        return 1
-    }
-
-    local chosen=$(printf '%s\n' "$cached" | fzf --prompt="$(i18n::printf "搜索已缓存字体 > " "Search cached fonts > ")")
-    [[ -n $chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
+    local chosen
+    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/fonts" "搜索已缓存字体 > " "Search cached fonts > ") || return 1
     do::termux_apply_resource "$chosen" fonts "$URL_font_prefix" "$path_termux_font_ttf"
 }
 menu::f::ff::title() { i18n::printf -v "$1" "${_cat2} 浏览已缓存的字体${_faint}（~/.termux/cache）${_off}" "${_cat2} Browse cached fonts${_faint} (~/.termux/cache)${_off}"; }
@@ -320,35 +330,14 @@ menu::t::t1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ �
 menu::t::t2() { do::termux_apply_resource "Gruvbox Dark.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
 menu::t::t2::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Gruvbox Dark 主题${_off}" "${_cat3} Quick-apply Gruvbox Dark${_off}"; }
 menu::t::t() {
-    do::set_deps fzf || return 1
-
-    local theme_list
-    io::fetch_cached theme_list "$path_cache_res_lists_dir/theme_list.tsv" "$URL_res_lists_prefix/theme_list.tsv" || return 1
-
-    local chosen_theme=$(printf '%s\n' "$theme_list" | fzf --prompt="$(i18n::printf "搜索主题 > " "Search themes > ")" --with-nth=1 --delimiter='\t' | cut -f2)
-    [[ -n $chosen_theme ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
-    do::termux_apply_resource "$chosen_theme" themes "$URL_theme_prefix" "$path_termux_colors_properties"
+    local chosen
+    chosen=$(out::fzf_tsv_pick theme_list.tsv "搜索主题 > " "Search themes > ") || return 1
+    do::termux_apply_resource "$chosen" themes "$URL_theme_prefix" "$path_termux_colors_properties"
 }
 menu::t::t::title() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 menu::t::tt() {
-    do::set_deps fzf || return 1
-
-    local cached
-    cached=$(sys::list_dir_files "$path_termux_res_cache_dir/themes") || {
-        i18n::printf "没有已缓存的主题: %s\n" "No cached themes: %s\n" "$path_termux_res_cache_dir/themes"
-        return 1
-    }
-
-    local chosen=$(printf '%s\n' "$cached" | fzf --prompt="$(i18n::printf "搜索已缓存主题 > " "Search cached themes > ")")
-    [[ -n $chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
+    local chosen
+    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/themes" "搜索已缓存主题 > " "Search cached themes > ") || return 1
     do::termux_apply_resource "$chosen" themes "$URL_theme_prefix" "$path_termux_colors_properties"
 }
 menu::t::tt::title() { i18n::printf -v "$1" "${_cat3} 浏览已缓存的主题${_faint}（~/.termux/cache）${_off}" "${_cat3} Browse cached themes${_faint} (~/.termux/cache)${_off}"; }
@@ -360,34 +349,14 @@ menu::k::b::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按�
 menu::k::k1() { do::termux_apply_resource "Enhanced.properties" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"; }
 menu::k::k1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 menu::k::k() {
-    do::set_deps fzf || return 1
-
-    local keymap_list
-    io::fetch_cached keymap_list "$path_cache_res_lists_dir/keymap_list.tsv" "$URL_res_lists_prefix/keymap_list.tsv" || return 1
-
-    local chosen=$(printf '%s\n' "$keymap_list" | fzf --prompt="$(i18n::printf "搜索按键布局 > " "Search keymaps > ")" --with-nth=1 --delimiter='\t' | cut -f2)
-    [[ -n $chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
+    local chosen
+    chosen=$(out::fzf_tsv_pick keymap_list.tsv "搜索按键布局 > " "Search keymaps > ") || return 1
     do::termux_apply_resource "$chosen" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"
 }
 menu::k::k::title() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
 menu::k::kk() {
-    do::set_deps fzf || return 1
-
-    local cached
-    cached=$(sys::list_dir_files "$path_termux_res_cache_dir/keymaps") || {
-        i18n::printf "没有已缓存的按键布局: %s\n" "No cached keymaps: %s\n" "$path_termux_res_cache_dir/keymaps"
-        return 1
-    }
-
-    local chosen=$(printf '%s\n' "$cached" | fzf --prompt="$(i18n::printf "搜索已缓存按键布局 > " "Search cached keymaps > ")")
-    [[ -n $chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
+    local chosen
+    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/keymaps" "搜索已缓存按键布局 > " "Search cached keymaps > ") || return 1
     do::termux_apply_resource "$chosen" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"
 }
 menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按键布局${_faint}（~/.termux/cache）${_off}" "${_cat4} Browse cached keymaps${_faint} (~/.termux/cache)${_off}"; }
@@ -397,7 +366,7 @@ menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按�
 menu::root::fish() { do::set_deps fish && chsh -s fish && i18n_msg::shell_changed fish; }
 menu::root::fish::title() {
     local _status=''
-    sys::command_status fish _status
+    out::command_status fish _status
     i18n::printf -v "$1" "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$_status"
 }
 
@@ -411,11 +380,11 @@ menu::ffff::f() {
     fi
     i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以用于卸载自身。\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n"
 }
-menu::ffff::f::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(sys::fisher_plugin_status "jorgebucaran/fisher")"; }
+menu::ffff::f::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(out::fisher_plugin_status "jorgebucaran/fisher")"; }
 menu::ffff::a() { fish -c "fisher install gazorby/fifc"; }
-menu::ffff::a::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(sys::fisher_plugin_status "gazorby/fifc")"; }
+menu::ffff::a::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(out::fisher_plugin_status "gazorby/fifc")"; }
 menu::ffff::b() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
-menu::ffff::b::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(sys::fisher_plugin_status "IlanCosman/tide")"; }
+menu::ffff::b::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(out::fisher_plugin_status "IlanCosman/tide")"; }
 
 # ---- Shell 辅助套件 ----
 
@@ -434,7 +403,7 @@ menu::sh::eza() {
     }
 
     local content
-    io::fetch_cached content "${path_cache_config_cells_dir}/shell/eza_alias.${shell}" "${URL_config_cells_prefix}shell/eza_alias.${shell}" || return 1
+    out::fetch_cached content "${path_cache_config_cells_dir}/shell/eza_alias.${shell}" "${URL_config_cells_prefix}shell/eza_alias.${shell}" || return 1
 
     local config scan_target
     case "$shell" in
@@ -532,14 +501,14 @@ ${_faint}Practical configs for Lazyvim, items 1-6 write config files${_off}"; }
 menu::vim::i() { do::set_deps neovim; }
 menu::vim::i::title() {
     local _status=''
-    sys::command_status nvim _status
+    out::command_status nvim _status
     i18n::printf -v "$1" "${_vimcolor}${_memu_hl} 安装 Neovim${_faint}（%s）${_off}" "${_vimcolor}${_memu_hl} Install Neovim${_faint} (%s)${_off}" "$_status"
 }
 
 menu::vim::ii() { do::set_deps git && git clone https://github.com/LazyVim/starter ~/.config/nvim && i18n_msg::nvim_config_changed; }
 menu::vim::ii::title() {
     local _status=''
-    sys::command_status_by_file ~/.local/share/nvim/lazy/LazyVim/init.lua _status
+    out::command_status_by_file ~/.local/share/nvim/lazy/LazyVim/init.lua _status
     i18n::printf -v "$1" "${_vimcolor}${_memu_hl} 安装 Lazyvim${_faint}（%s）${_off}" "${_vimcolor}${_memu_hl} Install Lazyvim${_faint} (%s)${_off}" "$_status"
 }
 
@@ -647,7 +616,7 @@ i18n_msg::nvim_config_changed() { i18n::printf "${_ok}>${_off} 已更改 Neovim 
 # -- loop menu --
 
 # 剥离 S-表达式最外层括号：(a b c) → a b c
-pure::strip_parens() {
+out::strip_parens() {
     local s="${1#(}" _v="${2:-}"
     if [[ -n $_v ]]; then
         printf -v "$_v" '%s' "${s%)}"
@@ -658,7 +627,7 @@ pure::strip_parens() {
 
 # 按括号深度将扁平常量解析为逐行子节点
 # "a (g1 b (g2 c)) f" → a \n (g1 b (g2 c)) \n f
-pure::parse_children() {
+out::parse_children() {
     local input="$1" depth=0 current='' i=0 ch
     local -n _out="$2"
     _out=()
@@ -691,7 +660,7 @@ pure::parse_children() {
 # Shell 风格引号解析：单/双引号内空格保留为同一参数，引号本身不进入结果
 # $1  输入字符串
 # $2  输出数组变量名（nameref）
-pure::split_args() {
+out::split_args() {
     local input="$1"
     # shellcheck disable=SC2178
     local -n _out="$2"
@@ -740,13 +709,13 @@ app::loop_menu() {
     local raw_expr="$1" root_name="${2:-}"
 
     # 规范化 S-表达式
-    local flat="$(pure::strip_parens "$(printf '%s' "$raw_expr" | sed 's/;.*//' | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")"
+    local flat="$(out::strip_parens "$(printf '%s' "$raw_expr" | sed 's/;.*//' | tr '\n' ' ' | sed 's/[[:space:]]\{1,\}/ /g; s/^ //; s/ $//')")"
     local parent="${flat%% *}" children_flat="${flat#* }"
     [[ $children_flat == "$parent" ]] && children_flat=''
     [[ -z $root_name ]] && root_name="$parent"
 
     local -a children_arr=()
-    pure::parse_children "$children_flat" children_arr
+    out::parse_children "$children_flat" children_arr
 
     while true; do
         # 准备 buf
@@ -765,7 +734,7 @@ app::loop_menu() {
         local child _in='' _gt='' _lt=''
         for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
-                pure::strip_parens "$child" _in
+                out::strip_parens "$child" _in
                 local gname="${_in%% *}" _gt=''
                 "menu::${gname}" _gt 2> /dev/null
                 _gt="${_gt%%$'\n'*}"
@@ -799,7 +768,7 @@ app::loop_menu() {
 
         # 拆分用户输入：第一项为 key，剩余为业务参数
         local key='' parts=()
-        pure::split_args "$choice" parts
+        out::split_args "$choice" parts
         key="${parts[0]:-}"
         set -- "${parts[@]:1}"
 
@@ -807,7 +776,7 @@ app::loop_menu() {
         for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
                 local inner
-                pure::strip_parens "$child" inner
+                out::strip_parens "$child" inner
                 [[ ${inner%% *} == "$key" ]] && {
                     app::loop_menu "$child" "$root_name"
                     break
