@@ -745,20 +745,18 @@ app::loop_menu() {
                 }
             elif [[ $child == "$key" ]]; then
                 local action_func="menu::${parent}::${key}"
-                declare -F "$action_func" > /dev/null 2>&1 ||
-                    action_func="menu::_::${key}"
-                if declare -F "$action_func" > /dev/null 2>&1; then
-                    MENU_QUICK=0
-                    "$action_func" "$@"
-                    local _rc=$?
-                    ((MENU_QUICK)) || {
-                        local _p="$_ok>"
-                        ((_rc)) && _p="${_cat1}×"
-                        i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
-                        i18n::printf "  按回车键继续..." "  Press Enter to continue..."
-                        read -r _ < /dev/tty
-                    }
-                fi
+                declare -F "$action_func" > /dev/null 2>&1 || action_func="menu::_::${key}"
+                declare -F "$action_func" > /dev/null 2>&1 || break
+                MENU_QUICK=0
+                "$action_func" "$@"
+                local _rc=$?
+                ((MENU_QUICK)) || {
+                    local _p="$_ok>"
+                    ((_rc)) && _p="${_cat1}×"
+                    i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
+                    i18n::printf "  按回车键继续..." "  Press Enter to continue..."
+                    read -r _ < /dev/tty
+                }
                 break
             fi
         done
