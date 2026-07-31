@@ -238,6 +238,20 @@ out::fzf_dir_pick() {
     printf '%s\n' "$_chosen"
 }
 
+# gum choose 交互式选择 shell，取消则设 MENU_QUICK=1 并返回 1
+# $1: 工具名（用于 i18n 提示）  $2+: shell 候选列表
+out::choose_shell() {
+    do::set_deps gum >&2 || return 1
+    local tool="$1" chosen
+    shift
+    chosen=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "$tool")" "$@")
+    [[ -n $chosen ]] || {
+        MENU_QUICK=1
+        return 1
+    }
+    printf '%s\n' "$chosen"
+}
+
 sys::open_url() {
     xdg-open "$1" || {
         i18n::printf "拉起 xdg-open 失败: %s\n" "Failed to open URL: %s\n" "$1"
@@ -396,27 +410,14 @@ ${_faint}将显示 diff 更改供审阅，自动备份旧配置${_off}" \
     "${_purple}${_memu_hl} More Shell utilities${_off}
 ${_faint}Shows diff before applying, auto-backs up old config${_off}"; }
 menu::sh::eza() {
-    do::set_deps eza gum || return 1
+    do::set_deps eza || return 1
 
-    local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "eza")" bash fish)
-    [[ -n $shell ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
-    local content
+    local shell content config scan_target
+    shell=$(out::choose_shell eza bash fish) || return 1
     out::fetch_cached content "${path_cache_config_cells_dir}/shell/eza_alias.${shell}" "${URL_config_cells_prefix}shell/eza_alias.${shell}" || return 1
-
-    local config scan_target
     case "$shell" in
-        bash)
-            config="$HOME/.bashrc"
-            scan_target="$HOME/.bashrc"
-            ;;
-        fish)
-            config="$HOME/.config/fish/conf.d/eza_alias.fish"
-            scan_target="$HOME/.config/fish/"
-            ;;
+        bash) config="$HOME/.bashrc" scan_target="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/eza_alias.fish" scan_target="$HOME/.config/fish/" ;;
     esac
 
     do::warn_existing_config "$scan_target" 'alias.*eza' && do::write_user_config "$config" "$content" &&
@@ -424,33 +425,14 @@ menu::sh::eza() {
 }
 menu::sh::eza::title() { i18n::printf -v "$1" "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
 menu::sh::zox() {
-    do::set_deps zoxide gum || return 1
+    do::set_deps zoxide || return 1
 
-    local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "zoxide")" bash fish)
-    [[ -n $shell ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
-    local config content scan_target
+    local shell content config scan_target
+    shell=$(out::choose_shell zoxide bash fish) || return 1
+    out::fetch_cached content "${path_cache_config_cells_dir}/shell/zoxide_init.${shell}" "${URL_config_cells_prefix}shell/zoxide_init.${shell}" || return 1
     case "$shell" in
-        bash)
-            config="$HOME/.bashrc"
-            scan_target="$HOME/.bashrc"
-            # shellcheck disable=SC2016
-            content='# -- zoxide init {{ --
-eval "$(zoxide init bash)"
-# -- }} zoxide init --'
-            ;;
-        fish)
-            config="$HOME/.config/fish/conf.d/zoxide.fish"
-            scan_target="$HOME/.config/fish/"
-            content='# -- zoxide init {{ --
-if status is-interactive
-    zoxide init fish | source
-end
-# -- }} zoxide init --'
-            ;;
+        bash) config="$HOME/.bashrc" scan_target="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/zoxide_init.fish" scan_target="$HOME/.config/fish/" ;;
     esac
 
     do::warn_existing_config "$scan_target" 'zoxide init' && do::write_user_config "$config" "$content" &&
@@ -458,33 +440,14 @@ end
 }
 menu::sh::zox::title() { i18n::printf -v "$1" "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
 menu::sh::atu() {
-    do::set_deps atuin gum || return 1
+    do::set_deps atuin || return 1
 
-    local shell=$(gum choose --header="$(i18n::printf "需要为哪个 shell 设置 %s？" "Which shell to configure for %s?" "atuin")" bash fish)
-    [[ -n $shell ]] || {
-        MENU_QUICK=1
-        return 1
-    }
-
-    local config content scan_target
+    local shell content config scan_target
+    shell=$(out::choose_shell atuin bash fish) || return 1
+    out::fetch_cached content "${path_cache_config_cells_dir}/shell/atuin_init.${shell}" "${URL_config_cells_prefix}shell/atuin_init.${shell}" || return 1
     case "$shell" in
-        bash)
-            config="$HOME/.bashrc"
-            scan_target="$HOME/.bashrc"
-            # shellcheck disable=SC2016
-            content='# -- atuin init {{ --
-eval "$(atuin init bash --disable-up-arrow)"
-# -- }} atuin init --'
-            ;;
-        fish)
-            config="$HOME/.config/fish/conf.d/atuin.fish"
-            scan_target="$HOME/.config/fish/"
-            content='# -- atuin init {{ --
-if status is-interactive
-    atuin init fish --disable-up-arrow | source
-end
-# -- }} atuin init --'
-            ;;
+        bash) config="$HOME/.bashrc" scan_target="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/atuin_init.fish" scan_target="$HOME/.config/fish/" ;;
     esac
 
     do::warn_existing_config "$scan_target" 'atuin init' && do::write_user_config "$config" "$content" &&
