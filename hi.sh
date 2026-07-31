@@ -143,6 +143,8 @@ do::warn_existing_config() {
 do::write_user_config() {
     local config="$1" content="$2"
 
+    do::set_deps gum || return 1
+
     [[ -f $config ]] && [[ "$(< "$config")" == *"$content"* ]] && {
         local _range=$(_content="$content" awk '
             { h = h $0 "\n" }
