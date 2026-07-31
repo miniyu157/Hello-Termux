@@ -724,6 +724,8 @@ app::loop_menu() {
             printf "\n"
             return
         }
+        printf '\e[A'  # 吞掉 Enter 产生的换行，避免光标下跳
+
         [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
         # 拆分用户输入：第一项为 key，剩余为业务参数
