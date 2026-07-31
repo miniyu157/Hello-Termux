@@ -721,7 +721,7 @@ app::loop_menu() {
 
     while true; do
         # 准备 buf
-        local buf='' _line=''
+        local buf=$'\n' _line=''
 
         # 调用 menu::<parent> 渲染标题，第一行作为主标题（✦ 包裹的加粗），剩余行作为副标题（4空格缩进）
         local header_text='' first_line rest_lines
