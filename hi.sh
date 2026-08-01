@@ -68,11 +68,18 @@ do::set_deps() {
         command -v "$dep" > /dev/null 2>&1 || missing+=("$dep")
     done
     ((${#missing[@]})) || return 0
-    i18n::printf "正在安装缺少的依赖: %s\n" "Installing missing dependencies: %s\n" "${missing[*]}"
-    pkg install -y "${missing[@]}" || {
-        i18n::printf "依赖安装未完成。\n" "Dependency installation did not complete.\n"
+    if [[ -n ${PREFIX:-} ]]; then
+        i18n::printf "正在安装缺少的依赖: %s\n" "Installing missing dependencies: %s\n" "${missing[*]}"
+        pkg install -y "${missing[@]}" || {
+            i18n::printf "依赖安装未完成。\n" "Dependency installation did not complete.\n"
+            return 1
+        }
+    else
+        i18n::printf "失败了，尚未安装这些：%s\n" \
+            "Failed — not yet installed: %s\n" \
+            "${missing[*]}"
         return 1
-    }
+    fi
 }
 
 out::fetch_cached() {
@@ -141,10 +148,9 @@ void::warn_existing_config() {
 # $1: 配置文件路径
 # $2: 完整内容块
 do::write_user_config() {
-    local config="$1" content="$2"
-
     do::set_deps gum || return 1
 
+    local config="$1" content="$2"
     [[ -f $config ]] && [[ "$(< "$config")" == *"$content"* ]] && {
         local _range=$(_content="$content" awk '
             { h = h $0 "\n" }
@@ -300,20 +306,136 @@ out::command_status_by_file() {
     fi
 }
 
+# 将 chosen_mirrors 指向指定镜像文件或镜像组目录
+# $1  镜像文件或镜像组目录路径
+do::set_mirror_link() {
+    [[ -L $path_termux_mirror_link ]] && unlink "$path_termux_mirror_link"
+    ln -s "$1" "$path_termux_mirror_link"
+}
+
+# 读取镜像文件的描述（第 2 行首个空格之后）
+# $1  镜像文件路径
+# $2  输出变量名，省略则输出到 stdout
+out::mirror_desc() {
+    local _v="${2:-}" _omd_desc=''
+    {
+        IFS= read -r _
+        IFS=' ' read -r _ _omd_desc
+    } < "$1"
+    if [[ -n $_v ]]; then
+        printf -v "$_v" '%s' "$_omd_desc"
+    else
+        printf '%s' "$_omd_desc"
+    fi
+}
+
+do::need_termux_prefix() {
+    [[ -n ${PREFIX:-} ]] || {
+        i18n::printf "此功能仅在 Termux 环境下可用。\n" "This feature is only available in Termux.\n" >&2
+        return 1
+    }
+}
 # ==== 业务菜单函数开始 ====
 menu::root() { printf -v "$1" '%b\n%b' "Hello Termux${_off}" "${_faint}https://github.com/miniyu157/Hello-Termux${_off}"; }
 
-menu::root::m() { termux-change-repo; }
+menu::root::m() {
+    do::need_termux_prefix || return 1
+    do::set_deps gum || return 1
+
+    local _mg_label="$(i18n::printf "镜像组（在多个镜像间轮换，推荐）" "Mirror group (rotate between mirrors, recommended)")"
+    local _ms_label="$(i18n::printf "单一镜像" "Single mirror")"
+
+    # Step 1: Mirror group or single mirror
+    local mode
+    mode=$(gum choose --header="$(i18n::printf "选择镜像模式：" "Select mirror mode:")" \
+        "$_mg_label" "$_ms_label") || {
+        MENU_QUICK=1
+        return 1
+    }
+
+    {
+        if [[ $mode == "$_ms_label" ]]; then
+            # ---- Single mirror ----
+            local _opts=() _desc=''
+
+            # Default mirror first
+            local _def_path="$path_termux_mirrors_dir/default"
+            [[ -f $_def_path ]] && {
+                out::mirror_desc "$_def_path" _desc
+                _opts+=("${_def_path##*/} — $_desc")
+            }
+
+            # packages.termux.dev second (special-cased in original)
+            local _ptd_path="$path_termux_mirrors_dir/europe/packages.termux.dev"
+            [[ -f $_ptd_path ]] && {
+                out::mirror_desc "$_ptd_path" _desc
+                _opts+=("packages.termux.dev — $_desc")
+            }
+
+            # All remaining mirrors, skip packages.termux.dev (already added)
+            while IFS= read -r -d '' f; do
+                local _u="${f##*/}"
+                [[ $_u == "packages.termux.dev" ]] && continue
+                out::mirror_desc "$f" _desc
+                _opts+=("$_u — $_desc")
+            done < <(find "$path_termux_mirrors_dir"/{asia,chinese_mainland,europe,north_america,oceania,russia}/ \
+                -type f ! -name "*\.dpkg-old" ! -name "*\.dpkg-new" ! -name "*~" -print0 2> /dev/null | sort -z)
+
+            local chosen
+            chosen=$(gum filter --header="$(i18n::printf "选择单一镜像（可输入筛选）：" "Select a single mirror (type to filter):")" \
+                --placeholder="$(i18n::printf "输入关键词筛选..." "Type to filter...")" \
+                "${_opts[@]}") || {
+                MENU_QUICK=1
+                return 1
+            }
+
+            local chosen_url="${chosen%% — *}"
+            local mirror_path
+            mirror_path=$(find "$path_termux_mirrors_dir" -name "$chosen_url" -type f 2> /dev/null | head -1)
+            [[ -z $mirror_path ]] && {
+                i18n::printf "未找到镜像: %s\n" "Mirror not found: %s\n" "$chosen_url" >&2
+                return 1
+            }
+            do::set_mirror_link "$mirror_path"
+        else
+            # ---- Mirror group ----
+            local _g_all="$(i18n::printf "所有镜像" "All mirrors")"
+            local _g_asia="$(i18n::printf "亚洲（不含中国大陆和俄罗斯）" "Asia (excl. Chinese Mainland & Russia)")"
+            local _g_cn="$(i18n::printf "中国大陆" "Chinese Mainland")"
+            local _g_eu="$(i18n::printf "欧洲" "Europe")"
+            local _g_na="$(i18n::printf "北美" "North America")"
+            local _g_oc="$(i18n::printf "大洋洲" "Oceania")"
+            local _g_ru="$(i18n::printf "俄罗斯" "Russia")"
+
+            local group
+            group=$(gum choose --header="$(i18n::printf "选择镜像组：" "Choose mirror group:")" \
+                "$_g_all" "$_g_asia" "$_g_cn" "$_g_eu" "$_g_na" "$_g_oc" "$_g_ru") || {
+                MENU_QUICK=1
+                return 1
+            }
+
+            case "$group" in
+                "$_g_all") do::set_mirror_link "$path_termux_mirrors_dir/all" ;;
+                "$_g_asia") do::set_mirror_link "$path_termux_mirrors_dir/asia" ;;
+                "$_g_cn") do::set_mirror_link "$path_termux_mirrors_dir/chinese_mainland" ;;
+                "$_g_eu") do::set_mirror_link "$path_termux_mirrors_dir/europe" ;;
+                "$_g_na") do::set_mirror_link "$path_termux_mirrors_dir/north_america" ;;
+                "$_g_oc") do::set_mirror_link "$path_termux_mirrors_dir/oceania" ;;
+                "$_g_ru") do::set_mirror_link "$path_termux_mirrors_dir/russia" ;;
+            esac
+        fi
+    } && i18n::printf "设置完成，建议运行一次 '${_hl}pkg update${_off}' 以更新数据库。\n" "Done. Run '${_hl}pkg update${_off}' to refresh the package database.\n"
+}
 menu::root::m::title() {
     local link=$(readlink "$path_termux_mirror_link" 2> /dev/null)
     link="${link##*/}"
     i18n::printf -v "$1" "${_cat1}${_memu_hl} 更换软件包源${_faint}（镜像: %s）${_off}" "${_cat1}${_memu_hl} Change package mirror${_faint} (mirror: %s)${_off}" "${link:-$(i18n::printf "未设置" "none")}"
 }
 
-menu::root::mc() { ln -sf "$path_termux_mirrors_dir/chinese_mainland" "$path_termux_mirror_link" && i18n::printf "设置完成。\n" "Done.\n"; }
-menu::root::mc::title() { i18n::printf -v "$1" "${_cat1} 快捷设置中国大陆软件源${_off}" "${_cat1} Quick-set Chinese mainland mirror${_off}"; }
-
-menu::root::u() { pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"; }
+menu::root::u() {
+    do::need_termux_prefix || return 1
+    pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+}
 menu::root::u::title() { i18n::printf -v "$1" "${_cat1}󰏕 更新和升级软件包${_off}" "${_cat1}󰏕 Update and upgrade packages${_off}"; }
 
 # ---- 字体菜单 ----
@@ -724,7 +846,7 @@ app::loop_menu() {
             printf "\n"
             return
         }
-        printf '\e[A'  # 吞掉 Enter 产生的换行，避免光标下跳
+        printf '\e[A' # 吞掉 Enter 产生的换行，避免光标下跳
 
         [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
@@ -772,7 +894,7 @@ app::set_paths
 app::set_resource_service github.com
 
 app::loop_menu '(root
-      m  mc  u       ; Mirrors & updates.
+      m  u           ; Mirrors & updates.
       (f             ; Fonts
         f ff b 1 2)
       (t             ; Color themes
