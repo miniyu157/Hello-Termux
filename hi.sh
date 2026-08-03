@@ -502,8 +502,8 @@ menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按�
 
 # ---- fish 安装 ----
 
-menu::fish::i() { do::set_deps fish && chsh -s fish && i18n_msg::shell_changed fish; }
-menu::fish::i::title() {
+menu::fi::i() { do::set_deps fish && chsh -s fish && i18n_msg::shell_changed fish; }
+menu::fi::i::title() {
     local _status=''
     out::command_status fish _status
     i18n::printf -v "$1" "${_green}${_memu_hl} 安装友好交互的 Shell - fish${_faint}（%s）${_off}" "${_green}${_memu_hl} Install the friendly interactive shell — fish${_faint} (%s)${_off}" "$_status"
@@ -511,19 +511,19 @@ menu::fish::i::title() {
 
 # ---- fish 插件 ----
 
-menu::fish() { i18n::printf -v "$1" "${_green}${_memu_hl}󰻳 了解友好交互的 fish + fisher${_off}" "${_green}${_memu_hl}󰻳 About the friendly interactive fish + fisher${_off}"; }
-menu::fish::ii() {
+menu::fi() { i18n::printf -v "$1" "${_green}${_memu_hl} 了解友好交互的 fish + fisher${_off}" "${_green}${_memu_hl} About the friendly interactive fish + fisher${_off}"; }
+menu::fi::ii() {
     local fisher_func="$HOME/.config/fish/functions/fisher.fish"
     if [[ ! -f $fisher_func ]]; then
         fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher" || return 1
     fi
     i18n::printf "已安装 fisher，可以使用 '${_hl}fisher${_off}' 命令管理 fish 插件，也可以用于卸载自身。\n" "fisher is installed. Use '${_hl}fisher${_off}' to manage fish plugins, or to uninstall itself.\n"
 }
-menu::fish::ii::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰐱 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰐱 Install fisher plugin manager${_faint} (%s)${_off}" "$(out::fisher_plugin_status "jorgebucaran/fisher")"; }
-menu::fish::1() { fish -c "fisher install gazorby/fifc"; }
-menu::fish::1::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(out::fisher_plugin_status "gazorby/fifc")"; }
-menu::fish::2() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
-menu::fish::2::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(out::fisher_plugin_status "IlanCosman/tide")"; }
+menu::fi::ii::title() { i18n::printf -v "$1" "${_green}${_memu_hl}󰻳 安装 fisher 插件管理器${_faint}（%s）${_off}" "${_green}${_memu_hl}󰻳 Install fisher plugin manager${_faint} (%s)${_off}" "$(out::fisher_plugin_status "jorgebucaran/fisher")"; }
+menu::fi::1() { fish -c "fisher install gazorby/fifc"; }
+menu::fi::1::title() { i18n::printf -v "$1" "${_green}gazorby/fifc — 智能补全${_faint}（%s）${_off}" "${_green}gazorby/fifc — smart completions${_faint} (%s)${_off}" "$(out::fisher_plugin_status "gazorby/fifc")"; }
+menu::fi::2() { fish -i -c "fisher install IlanCosman/tide@v6" < /dev/tty; }
+menu::fi::2::title() { i18n::printf -v "$1" "${_green}IlanCosman/tide@v6 — 优秀主题${_faint}（%s）${_off}" "${_green}IlanCosman/tide@v6 — a beautiful prompt${_faint} (%s)${_off}" "$(out::fisher_plugin_status "IlanCosman/tide")"; }
 
 # ---- Shell 辅助套件 ----
 
@@ -580,38 +580,38 @@ menu::sh::atu::title() { i18n::printf -v "$1" "${_purple}安装 atuin，并为 b
 
 # ---- Neovim + Lazyvim ----
 
-menu::vim() { i18n::printf -v "$1" \
+menu::vi() { i18n::printf -v "$1" \
     "${_vimcolor}${_memu_hl} 配置 Neovim + Lazyvim${_off}
 ${_faint}包含 Lazyvim 的实用配置，其中 1-6 菜单为配置文件写入${_off}" \
     "${_vimcolor}${_memu_hl} Configure Neovim + Lazyvim${_off}
 ${_faint}Practical configs for Lazyvim, items 1-6 write config files${_off}"; }
 
-menu::vim::i() { do::set_deps neovim; }
-menu::vim::i::title() {
+menu::vi::i() { do::set_deps neovim; }
+menu::vi::i::title() {
     local _status=''
     out::command_status nvim _status
     i18n::printf -v "$1" "${_vimcolor}${_memu_hl} 安装 Neovim${_faint}（%s）${_off}" "${_vimcolor}${_memu_hl} Install Neovim${_faint} (%s)${_off}" "$_status"
 }
 
-menu::vim::ii() { do::set_deps git && git clone https://github.com/LazyVim/starter ~/.config/nvim && i18n_msg::nvim_config_changed; }
-menu::vim::ii::title() {
+menu::vi::ii() { do::set_deps git && git clone https://github.com/LazyVim/starter ~/.config/nvim && i18n_msg::nvim_config_changed; }
+menu::vi::ii::title() {
     local _status=''
     out::command_status_by_file ~/.local/share/nvim/lazy/LazyVim/init.lua _status
     i18n::printf -v "$1" "${_vimcolor}${_memu_hl} 安装 Lazyvim${_faint}（%s）${_off}" "${_vimcolor}${_memu_hl} Install Lazyvim${_faint} (%s)${_off}" "$_status"
 }
 
-menu::vim::1() { do::neovim_apply_config_cell keymaps.lua ~/.config/nvim/lua/config/keymaps.lua 'nvim_create_user_command'; }
-menu::vim::1::title() { i18n::printf -v "$1" "${_vimcolor}使 :w :wq :q :qa 忽略大小写${_off}" "${_vimcolor}Make :w :wq :q :qa case-insensitive${_off}"; }
-menu::vim::2() { do::neovim_apply_config_cell blink.lua ~/.config/nvim/lua/plugins/blink.lua 'select_and_accept'; }
-menu::vim::2::title() { i18n::printf -v "$1" "${_vimcolor}补全键换为 Tab${_off}" "${_vimcolor}Use Tab for completion${_off}"; }
-menu::vim::3() { do::neovim_apply_config_cell suda.lua ~/.config/nvim/lua/plugins/suda.lua 'suda_smart_edit'; }
-menu::vim::3::title() { i18n::printf -v "$1" "${_vimcolor}安装 suda 插件，使鉴权在编辑器内完成${_off}" "${_vimcolor}Install suda.vim to keep auth within the editor${_off}"; }
-menu::vim::4() { do::neovim_apply_config_cell autocmds.lua ~/.config/nvim/lua/config/autocmds.lua 'lazyvim_wrap_spell'; }
-menu::vim::4::title() { i18n::printf -v "$1" "${_vimcolor}编辑 markdown/gitcommit 时禁用拼写检查并自动换行${_off}" "${_vimcolor}Disable spell check & enable wrap when editing markdown/gitcommit${_off}"; }
-menu::vim::5() { do::neovim_apply_config_cell options_listchars.lua ~/.config/nvim/lua/config/options.lua listchars; }
-menu::vim::5::title() { i18n::printf -v "$1" "${_vimcolor}空格显示为点号以高亮${_off}" "${_vimcolor}Highlight spaces as dots${_off}"; }
-menu::vim::6() { do::neovim_apply_config_cell options_clipboard.lua ~/.config/nvim/lua/config/options.lua 'termux-clipboard-set'; }
-menu::vim::6::title() { i18n::printf -v "$1" "${_vimcolor}写入 termux-api 的剪贴板配置${_off}" "${_vimcolor}Write termux-api clipboard config${_off}"; }
+menu::vi::1() { do::neovim_apply_config_cell keymaps.lua ~/.config/nvim/lua/config/keymaps.lua 'nvim_create_user_command'; }
+menu::vi::1::title() { i18n::printf -v "$1" "${_vimcolor}使 :w :wq :q :qa 忽略大小写${_off}" "${_vimcolor}Make :w :wq :q :qa case-insensitive${_off}"; }
+menu::vi::2() { do::neovim_apply_config_cell blink.lua ~/.config/nvim/lua/plugins/blink.lua 'select_and_accept'; }
+menu::vi::2::title() { i18n::printf -v "$1" "${_vimcolor}补全键换为 Tab${_off}" "${_vimcolor}Use Tab for completion${_off}"; }
+menu::vi::3() { do::neovim_apply_config_cell suda.lua ~/.config/nvim/lua/plugins/suda.lua 'suda_smart_edit'; }
+menu::vi::3::title() { i18n::printf -v "$1" "${_vimcolor}安装 suda 插件，使鉴权在编辑器内完成${_off}" "${_vimcolor}Install suda.vim to keep auth within the editor${_off}"; }
+menu::vi::4() { do::neovim_apply_config_cell autocmds.lua ~/.config/nvim/lua/config/autocmds.lua 'lazyvim_wrap_spell'; }
+menu::vi::4::title() { i18n::printf -v "$1" "${_vimcolor}编辑 markdown/gitcommit 时禁用拼写检查并自动换行${_off}" "${_vimcolor}Disable spell check & enable wrap when editing markdown/gitcommit${_off}"; }
+menu::vi::5() { do::neovim_apply_config_cell options_listchars.lua ~/.config/nvim/lua/config/options.lua listchars; }
+menu::vi::5::title() { i18n::printf -v "$1" "${_vimcolor}空格显示为点号以高亮${_off}" "${_vimcolor}Highlight spaces as dots${_off}"; }
+menu::vi::6() { do::neovim_apply_config_cell options_clipboard.lua ~/.config/nvim/lua/config/options.lua 'termux-clipboard-set'; }
+menu::vi::6::title() { i18n::printf -v "$1" "${_vimcolor}写入 termux-api 的剪贴板配置${_off}" "${_vimcolor}Write termux-api clipboard config${_off}"; }
 
 # ---- 程序设置 ----
 
@@ -1117,7 +1117,7 @@ app::loop_menu() {
 
     while true; do
         # 准备 buf
-        local buf=$'\n' _line=''
+        local buf=$'\n' _line='' _key_indent=3
 
         # 调用 menu::<parent> 渲染标题，第一行作为主标题（✦ 包裹的加粗），剩余行作为副标题（4空格缩进）
         local header_text='' first_line rest_lines
@@ -1142,13 +1142,13 @@ app::loop_menu() {
                 local gname="${_in%% *}" _gt=''
                 "menu::${gname}" _gt 2> /dev/null
                 _gt="${_gt%%$'\n'*}"
-                printf -v _line "${_faint}${_italic}%4s${_off} %s\n" "$gname" "$_gt"
+                printf -v _line "${_faint}${_italic}%${_key_indent}s${_off} %s\n" "$gname" "$_gt"
             else
                 local title_func="menu::${parent}::${child}::title" _lt=''
                 declare -F "menu::${parent}::${child}" > /dev/null 2>&1 ||
                     title_func="menu::_::${child}::title"
                 "$title_func" _lt 2> /dev/null
-                printf -v _line "${_faint}${_italic}%4s${_off} %s\n" "$child" "$_lt"
+                printf -v _line "${_faint}${_italic}%${_key_indent}s${_off} %s\n" "$child" "$_lt"
             fi
             buf+="$_line"
         done
@@ -1232,9 +1232,9 @@ app::loop_menu '(root
         t tt b 1 2)
       (k             ; Keymaps
         k kk b 1)
-      (fish          ; Fish shell & fisher plugins
+      (fi            ; Fish shell & fisher plugins
         i  ii  1  2)
-      (vim           ; Neovim + Lazyvim
+      (vi            ; Neovim + Lazyvim
         i  ii  1  2  3  4  5  6)
       (sh            ; Shell extras (eza/zoxide/atuin)
         eza  zox  atu)
