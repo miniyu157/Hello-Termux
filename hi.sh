@@ -804,10 +804,13 @@ out::word_right_pos() {
 
 # 逐字读取输入，引擎接管屏幕刷新，无换行闪动
 # $1 = 输出变量名 (nameref)
+# $2 = 历史数组名 (nameref)，↑↓ 在其中浏览
 # 返回 0 且输出非空 = 用户选择；0 且空 = Escape 返回上层；1 = EOF（输入流关闭）
 app::read_input() {
-    local -n _ariwh_out="$1"
+    local -n _ariwh_out="$1" _ariwh_hist="$2"
     local buffer='' byte='' cursor_pos=0 prefix=''
+    # 历史游标：等于历史长度表示"停在当前行"，此时 stash 无意义
+    local hist_idx="${#_ariwh_hist[@]}" hist_stash=''
 
     while true; do
         IFS= read -rsn1 byte || return 1 # 输入流关闭 → 上抛，避免空串被当成"返回上层"
@@ -875,6 +878,25 @@ app::read_input() {
                             ((cursor_pos < ${#buffer})) && ((cursor_pos++))
                         fi
                         ;;
+                    A) # ↑ — 取更早的历史；首次离开当前行时先暂存已输入内容
+                        if ((hist_idx > 0)); then
+                            ((hist_idx == ${#_ariwh_hist[@]})) && hist_stash="$buffer"
+                            ((hist_idx--))
+                            buffer="${_ariwh_hist[hist_idx]}"
+                            cursor_pos=${#buffer}
+                        fi
+                        ;;
+                    B) # ↓ — 取更晚的历史；越过最新一条则恢复暂存内容
+                        if ((hist_idx < ${#_ariwh_hist[@]})); then
+                            ((hist_idx++))
+                            if ((hist_idx == ${#_ariwh_hist[@]})); then
+                                buffer="$hist_stash"
+                            else
+                                buffer="${_ariwh_hist[hist_idx]}"
+                            fi
+                            cursor_pos=${#buffer}
+                        fi
+                        ;;
                     H) cursor_pos=0 ;;          # Home（CSI \e[H / SS3 \eOH）
                     F) cursor_pos=${#buffer} ;; # End（CSI \e[F / SS3 \eOF）
                     '~')
@@ -921,6 +943,9 @@ app::loop_menu() {
     local -a children_arr=()
     out::parse_children "$children_flat" children_arr
 
+    # 本层历史。递归时每层各持一份，互不干扰
+    local -a hist=()
+
     while true; do
         # 准备 buf
         local buf=$'\n' _line=''
@@ -965,7 +990,7 @@ app::loop_menu() {
         printf '%s' "${_refresh}${buf}"
 
         local choice=''
-        app::read_input choice || {
+        app::read_input choice hist || {
             printf '\n'
             return
         }
@@ -978,11 +1003,13 @@ app::loop_menu() {
         set -- "${parts[@]:1}"
 
         # 匹配用户输入；未匹配 → 继续循环（重新渲染）
+        local matched=0
         for child in "${children_arr[@]}"; do
             if [[ $child == '('*')' ]]; then
                 local inner
                 out::strip_parens "$child" inner
                 [[ ${inner%% *} == "$key" ]] && {
+                    matched=1
                     app::loop_menu "$child" "$root_name"
                     break
                 }
@@ -990,6 +1017,7 @@ app::loop_menu() {
                 local action_func="menu::${parent}::${key}"
                 declare -F "$action_func" > /dev/null 2>&1 || action_func="menu::_::${key}"
                 declare -F "$action_func" > /dev/null 2>&1 || break
+                matched=1
                 MENU_QUICK=0
                 printf '\r\e[K'
                 "$action_func" "$@"
@@ -1004,6 +1032,9 @@ app::loop_menu() {
                 break
             fi
         done
+
+        # 仅记录真正派发过的输入：误击不入历史。连续重复只留一条
+        ((matched)) && { ((${#hist[@]})) && [[ ${hist[-1]} == "$choice" ]] || hist+=("$choice"); }
     done
 }
 
