@@ -784,6 +784,128 @@ out::split_args() {
     [[ -n $current ]] && _out+=("$current")
 }
 
+# 词左边界：跳过光标前空白，再跳过一个词，返回起始下标
+# $1 输入串  $2 光标位置  $3 输出变量名
+out::word_left_pos() {
+    local s="$1" i="$2"
+    while ((i > 0)) && [[ ${s:i-1:1} == [[:space:]] ]]; do ((i--)); done
+    while ((i > 0)) && [[ ${s:i-1:1} != [[:space:]] ]]; do ((i--)); done
+    printf -v "$3" '%s' "$i"
+}
+
+# 词右边界：跳过光标处空白，再跳过一个词，返回结束下标
+# $1 输入串  $2 光标位置  $3 输出变量名
+out::word_right_pos() {
+    local s="$1" i="$2" n="${#1}"
+    while ((i < n)) && [[ ${s:i:1} == [[:space:]] ]]; do ((i++)); done
+    while ((i < n)) && [[ ${s:i:1} != [[:space:]] ]]; do ((i++)); done
+    printf -v "$3" '%s' "$i"
+}
+
+# 逐字读取输入，引擎接管屏幕刷新，无换行闪动
+# $1 = 输出变量名 (nameref)
+# 返回 0 且输出非空 = 用户选择；0 且空 = Escape 返回上层；1 = EOF（输入流关闭）
+app::read_input() {
+    local -n _ariwh_out="$1"
+    local buffer='' byte='' cursor_pos=0 prefix=''
+
+    while true; do
+        IFS= read -rsn1 byte || return 1 # 输入流关闭 → 上抛，避免空串被当成"返回上层"
+        case "$byte" in
+            '') # Enter — 引擎接管屏幕刷新
+                _ariwh_out="$buffer"
+                return 0
+                ;;
+            $'\x7f' | $'\x08') # Backspace / Ctrl+H — 删除光标前字符
+                if ((cursor_pos > 0)); then
+                    buffer="${buffer:0:cursor_pos-1}${buffer:cursor_pos}"
+                    ((cursor_pos--))
+                fi
+                ;;
+            $'\x04') # Ctrl+D — 空行时视为 EOF，否则删除光标处字符
+                if [[ -z $buffer ]]; then
+                    return 1
+                elif ((cursor_pos < ${#buffer})); then
+                    buffer="${buffer:0:cursor_pos}${buffer:cursor_pos+1}"
+                fi
+                ;;
+            $'\x15') buffer="${buffer:cursor_pos}" cursor_pos=0 ;; # Ctrl+U — 删至行首
+            $'\x17')                                               # Ctrl+W — 删至词首
+                local _wl=0
+                out::word_left_pos "$buffer" "$cursor_pos" _wl
+                buffer="${buffer:0:_wl}${buffer:cursor_pos}"
+                cursor_pos=$_wl
+                ;;
+            $'\e') # Escape — 按序列语法逐字节读取，不贪婪抽干（否则会吞掉紧随的按键）
+                local esc='' final='' params='' mod=''
+                if ! IFS= read -rsn1 -t "$ESC_DELAY" byte; then
+                    # 超时且无后继字节 → 裸 Escape，返回上层
+                    _ariwh_out=''
+                    return 0
+                fi
+                case "$byte" in
+                    '[') # CSI: 读参数字节（数字/分号）直到终结字节
+                        while IFS= read -rsn1 -t 0.2 byte; do
+                            esc+="$byte"
+                            [[ $byte == [[:digit:]] || $byte == ';' ]] || break
+                        done
+                        final="${esc: -1}" params="${esc%?}"
+                        ;;
+                    'O') # SS3: 固定再读一个终结字节
+                        IFS= read -rsn1 -t 0.2 final || final=''
+                        ;;
+                    *) continue ;; # Alt+键 等，忽略
+                esac
+
+                # 修饰位：CSI 1;<mod><final>，5=Ctrl 2=Shift 3=Alt
+                [[ $params == *';'* ]] && mod="${params##*;}"
+
+                case "$final" in
+                    D) # ← / Ctrl+← / Shift+←
+                        if [[ $mod == 5 ]]; then
+                            out::word_left_pos "$buffer" "$cursor_pos" cursor_pos
+                        else
+                            ((cursor_pos > 0)) && ((cursor_pos--))
+                        fi
+                        ;;
+                    C) # → / Ctrl+→ / Shift+→
+                        if [[ $mod == 5 ]]; then
+                            out::word_right_pos "$buffer" "$cursor_pos" cursor_pos
+                        else
+                            ((cursor_pos < ${#buffer})) && ((cursor_pos++))
+                        fi
+                        ;;
+                    H) cursor_pos=0 ;;          # Home（CSI \e[H / SS3 \eOH）
+                    F) cursor_pos=${#buffer} ;; # End（CSI \e[F / SS3 \eOF）
+                    '~')
+                        case "${params%%;*}" in
+                            1 | 7) cursor_pos=0 ;;          # Home
+                            4 | 8) cursor_pos=${#buffer} ;; # End
+                            3)                              # Delete — 删除光标处字符
+                                ((cursor_pos < ${#buffer})) &&
+                                    buffer="${buffer:0:cursor_pos}${buffer:cursor_pos+1}"
+                                ;;
+                        esac
+                        ;;
+                    *) ;; # 其他序列忽略（不泄漏到 buffer）
+                esac
+                ;;
+            *) # 可打印字符 — 在光标处插入，控制字符忽略
+                [[ $byte == [[:cntrl:]] ]] && continue
+                buffer="${buffer:0:cursor_pos}${byte}${buffer:cursor_pos}"
+                ((cursor_pos++))
+                ;;
+        esac
+
+        printf '\r\e[K'
+        prefix="${buffer:0:cursor_pos}"
+        printf '%s' "$prefix"
+        printf '\e[s'
+        printf '%s' "${buffer:cursor_pos}"
+        printf '\e[u'
+    done
+} < /dev/tty
+
 # 递归菜单渲染器
 # $1  S-表达式，如 "(root m mc u (ffff f a b) q)"
 # $2  根名称（首层自动从 $1 提取，递归时透传）
@@ -842,12 +964,11 @@ app::loop_menu() {
 
         printf '%s' "${_refresh}${buf}"
 
-        read -r choice < /dev/tty || {
-            printf "\n"
+        local choice=''
+        app::read_input choice || {
+            printf '\n'
             return
         }
-        printf '\e[A' # 吞掉 Enter 产生的换行，避免光标下跳
-
         [[ -z $choice ]] && { [[ $parent == "$root_name" ]] && continue || return; }
 
         # 拆分用户输入：第一项为 key，剩余为业务参数
@@ -870,6 +991,7 @@ app::loop_menu() {
                 declare -F "$action_func" > /dev/null 2>&1 || action_func="menu::_::${key}"
                 declare -F "$action_func" > /dev/null 2>&1 || break
                 MENU_QUICK=0
+                printf '\r\e[K'
                 "$action_func" "$@"
                 local _rc=$?
                 ((MENU_QUICK)) || {
@@ -884,6 +1006,10 @@ app::loop_menu() {
         done
     done
 }
+
+# 裸 Escape 与 Escape 序列首字节的区分窗口。太小会把慢速终端（Android/ssh）的
+# 方向键误判为裸 Escape，残余字节继而作为字面量落入 buffer。vim/fzf 量级为 25–50ms。
+declare -g ESC_DELAY=0.03
 
 declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m' _vimcolor=$'\e[38;2;54;207;78m'
 
