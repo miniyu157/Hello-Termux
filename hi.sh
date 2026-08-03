@@ -802,15 +802,85 @@ out::word_right_pos() {
     printf -v "$3" '%s' "$i"
 }
 
+# 显示列宽：非 ASCII 一律计 2 列。中英混排的正文按此计算与终端实际一致；
+# Nerd Font 图标属 Ambiguous 宽度，其列数由终端决定，不适用此估算
+# $1 输入串  $2 输出变量名
+out::display_width() {
+    local ascii="${1//[![:ascii:]]/}"
+    printf -v "$2" '%s' "$((${#ascii} + 2 * (${#1} - ${#ascii})))"
+}
+
+# 按显示列宽截断，超长时末尾换成省略号。要求输入为纯文本：
+# 串内若含转义序列，列宽会被算错且可能被截断在序列中间
+# $1 输入串  $2 最大列宽  $3 输出变量名
+out::fit_width() {
+    local s="$1" max="$2" w=0
+    out::display_width "$s" w
+    ((w <= max)) && {
+        printf -v "$3" '%s' "$s"
+        return
+    }
+    # 省略号 … 属 Ambiguous 宽度，保守预留 2 列
+    local budget=$((max - 2)) acc=0 i=0 n="${#s}" c cw out=''
+    ((budget <= 0)) && {
+        printf -v "$3" '%s' ''
+        return
+    }
+    while ((i < n)); do
+        c="${s:i:1}"
+        [[ $c == [[:ascii:]] ]] && cw=1 || cw=2
+        ((acc + cw > budget)) && break
+        out+="$c"
+        ((acc += cw))
+        ((i++))
+    done
+    printf -v "$3" '%s…' "$out"
+}
+
+# 单行视口：取光标附近宽度不超过 max 的窗口，溢出侧以 … 标记。
+# 输入行必须恒占一行，一旦触发终端自动折行，\r\e[K 就只清得到最后一行
+# 分两段回传，调用方在两段之间存光标（\e[s），由终端自行确定列，
+# 从而不受 … 属 Ambiguous 宽度、实际列数由终端决定的影响
+# $1 输入串  $2 光标字符下标  $3 最大列宽  $4 光标前输出变量名  $5 光标后输出变量名
+out::viewport() {
+    local s="$1" cur="$2" max="$3" w=0
+    out::display_width "$s" w
+    ((w <= max)) && {
+        printf -v "$4" '%s' "${s:0:cur}"
+        printf -v "$5" '%s' "${s:cur}"
+        return
+    }
+    # 右锚定在光标：向左收集到预算用尽为止。… 保守按 2 列预留
+    local budget=$((max - 2)) acc=0 i="$cur" ch cw
+    while ((i > 0)); do
+        ch="${s:i-1:1}"
+        [[ $ch == [[:ascii:]] ]] && cw=1 || cw=2
+        ((acc + cw > budget)) && break
+        ((acc += cw))
+        ((i--))
+    done
+    if ((i > 0)); then
+        printf -v "$4" '…%s' "${s:i:cur-i}"
+        ((acc += 2))
+    else
+        printf -v "$4" '%s' "${s:0:cur}"
+    fi
+    out::fit_width "${s:cur}" "$((max - acc))" "$5"
+}
+
 # 逐字读取输入，引擎接管屏幕刷新，无换行闪动
 # $1 = 输出变量名 (nameref)
 # $2 = 历史数组名 (nameref)，↑↓ 在其中浏览
 # 返回 0 且输出非空 = 用户选择；0 且空 = Escape 返回上层；1 = EOF（输入流关闭）
 app::read_input() {
     local -n _ariwh_out="$1" _ariwh_hist="$2"
-    local buffer='' byte='' cursor_pos=0 prefix=''
+    local buffer='' byte='' cursor_pos=0 vp_head='' vp_tail=''
     # 历史游标：等于历史长度表示"停在当前行"，此时 stash 无意义
     local hist_idx="${#_ariwh_hist[@]}" hist_stash=''
+    # 终端宽度只在进入时取一次：逐键 fork tput 在 Android 上过慢。
+    # 代价是输入途中改变窗口尺寸不会即时生效，回车重进本层后恢复准确
+    local cols="$(tput cols 2> /dev/null)"
+    [[ -n $cols && -z ${cols//[0-9]/} ]] && ((cols > 20)) || cols=80
 
     while true; do
         IFS= read -rsn1 byte || return 1 # 输入流关闭 → 上抛，避免空串被当成"返回上层"
@@ -919,11 +989,10 @@ app::read_input() {
                 ;;
         esac
 
-        printf '\r\e[K'
-        prefix="${buffer:0:cursor_pos}"
-        printf '%s' "$prefix"
+        out::viewport "$buffer" "$cursor_pos" "$((cols - 1))" vp_head vp_tail
+        printf '\r\e[K%s' "$vp_head"
         printf '\e[s'
-        printf '%s' "${buffer:cursor_pos}"
+        printf '%s' "$vp_tail"
         printf '\e[u'
     done
 } < /dev/tty
