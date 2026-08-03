@@ -1228,7 +1228,7 @@ app::loop_menu() {
 # 方向键误判为裸 Escape，残余字节继而作为字面量落入 buffer。vim/fzf 量级为 25–50ms。
 declare -g ESC_DELAY=0.03
 
-declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;101;255;101m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;255;115;108m' _cat2=$'\e[38;2;121;167;252m' _cat3=$'\e[38;2;255;174;193m' _cat4=$'\e[38;2;255;226;2m' _green=$'\e[38;2;173;255;184m' _purple=$'\e[38;2;243;159;249m' _vimcolor=$'\e[38;2;54;207;78m'
+declare -g _refresh=$'\e[H\e[J' _b=$'\e[1m' _faint=$'\e[2m' _italic=$'\e[3m' _memu_hl=$'\e[1m' _uline=$'\e[4m' _off=$'\e[0m' _ok=$'\e[38;2;137;230;137m' _hl=$'\e[38;2;255;174;193m' _cat1=$'\e[38;2;230;137;137m' _cat2=$'\e[38;2;137;184;230m' _cat3=$'\e[38;2;230;137;184m' _cat4=$'\e[38;2;230;211;137m' _green=$'\e[38;2;112;235;153m' _purple=$'\e[38;2;193;177;241m' _vimcolor=$'\e[38;2;78;199;96m'
 
 return 0 2> /dev/null
 
