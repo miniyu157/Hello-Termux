@@ -431,7 +431,7 @@ menu::root::m::title() {
     link="${link##*/}"
     i18n::printf -v "$1" "${_cat1}${_memu_hl} 更换软件包源${_faint}（镜像: %s）${_off}" "${_cat1}${_memu_hl} Change package mirror${_faint} (mirror: %s)${_off}" "${link:-$(i18n::printf "未设置" "none")}"
 }
-
+menu::root::m::hint() { i18n::printf -v "$1" "使用 gum 实现的高速 termux-change-repo 替代。\n仅 Termux 环境可用。" "A fast gum-based replacement for termux-change-repo.\nTermux environment only."; }
 menu::root::u() {
     do::need_termux_prefix || return 1
     pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
@@ -837,8 +837,47 @@ out::fit_width() {
     printf -v "$3" '%s…' "$out"
 }
 
-# 单行视口：取光标附近宽度不超过 max 的窗口，溢出侧以 … 标记。
-# 输入行必须恒占一行，一旦触发终端自动折行，\r\e[K 就只清得到最后一行
+# 按显示列宽软折行。输入中的换行为硬换行（末尾的换行不计，否则会多出空行）；
+# 单行超宽时优先断在空格处，无空格（如 CJK）则任意位置断开。不限制行数
+# $1 输入串  $2 最大列宽  $3 输出数组变量名（nameref）
+out::wrap_width() {
+    local s="$1" max="$2"
+    # shellcheck disable=SC2178
+    local -n _wo="$3"
+    _wo=()
+    ((max < 2)) && max=2
+    while [[ $s == *$'\n' ]]; do s="${s%$'\n'}"; done
+    local rest="$s" line cur ch cw i n w sp
+    while true; do
+        line="${rest%%$'\n'*}"
+        cur='' w=0 i=0 n="${#line}" sp=-1
+        while ((i < n)); do
+            ch="${line:i:1}"
+            [[ $ch == [[:ascii:]] ]] && cw=1 || cw=2
+            if ((w + cw > max)); then
+                if ((sp >= 0)); then
+                    _wo+=("${cur:0:sp}")
+                    cur="${cur:sp+1}"
+                else
+                    _wo+=("$cur")
+                    cur=''
+                fi
+                out::display_width "$cur" w
+                sp=-1
+            fi
+            cur+="$ch"
+            ((w += cw))
+            [[ $ch == ' ' ]] && sp=$((${#cur} - 1))
+            ((i++))
+        done
+        _wo+=("$cur")
+        [[ $rest == *$'\n'* ]] || break
+        rest="${rest#*$'\n'}"
+    done
+}
+
+# 单行视口：取光标附近宽度不超过 max 的窗口，溢出侧以 … 标记。输入行必须恒占一行，
+# 一旦触发终端自动折行，\r\e[K 就只清得到最后一行，下方 hint 区随即错位
 # 分两段回传，调用方在两段之间存光标（\e[s），由终端自行确定列，
 # 从而不受 … 属 Ambiguous 宽度、实际列数由终端决定的影响
 # $1 输入串  $2 光标字符下标  $3 最大列宽  $4 光标前输出变量名  $5 光标后输出变量名
@@ -868,13 +907,27 @@ out::viewport() {
     out::fit_width "${s:cur}" "$((max - acc))" "$5"
 }
 
-# 逐字读取输入，引擎接管屏幕刷新，无换行闪动
-# $1 = 输出变量名 (nameref)
-# $2 = 历史数组名 (nameref)，↑↓ 在其中浏览
+# 抹去输入行及其下方的 hint 区，光标停在输入行首。整块区域归输入引擎自有，
+# 故 \e[J 到屏幕末尾是安全的
+app::clear_input_region() { printf '\r\e[J'; }
+
+# 逐字输入 + hint 渲染。输入恒占一行（超长走视口），hint 渲染在其下方
+# $1 = parent 名
+# $2 = children 数组名 (nameref)
+# $3 = 输出变量名 (nameref)
+# $4 = 历史数组名 (nameref)，由调用层持有，↑↓ 在其中浏览
 # 返回 0 且输出非空 = 用户选择；0 且空 = Escape 返回上层；1 = EOF（输入流关闭）
-app::read_input() {
-    local -n _ariwh_out="$1" _ariwh_hist="$2"
-    local buffer='' byte='' cursor_pos=0 vp_head='' vp_tail=''
+app::read_input_with_hint() {
+    local parent="$1"
+    local -n _ariwh_children="$2" _ariwh_out="$3" _ariwh_hist="$4"
+    local buffer='' byte='' hint='' cursor_pos=0
+    local vp_head='' vp_tail=''
+    local -a parts=() hint_rows=()
+    local key='' child hint_func
+    # 已向下方预留的行数。按需增长，不回收：hint 变短时多余的行清空留白即可
+    local reserved=0
+    # 上次求过 hint 的首词。hint 只依赖首词，故逐键击键无须重复查找与折行
+    local hint_key=''
     # 历史游标：等于历史长度表示"停在当前行"，此时 stash 无意义
     local hist_idx="${#_ariwh_hist[@]}" hist_stash=''
     # 终端宽度只在进入时取一次：逐键 fork tput 在 Android 上过慢。
@@ -883,9 +936,13 @@ app::read_input() {
     [[ -n $cols && -z ${cols//[0-9]/} ]] && ((cols > 20)) || cols=80
 
     while true; do
-        IFS= read -rsn1 byte || return 1 # 输入流关闭 → 上抛，避免空串被当成"返回上层"
+        IFS= read -rsn1 byte || { # 输入流关闭 → 上抛，避免空串被当成"返回上层"
+            app::clear_input_region
+            return 1
+        }
         case "$byte" in
             '') # Enter — 引擎接管屏幕刷新
+                app::clear_input_region
                 _ariwh_out="$buffer"
                 return 0
                 ;;
@@ -897,6 +954,7 @@ app::read_input() {
                 ;;
             $'\x04') # Ctrl+D — 空行时视为 EOF，否则删除光标处字符
                 if [[ -z $buffer ]]; then
+                    app::clear_input_region
                     return 1
                 elif ((cursor_pos < ${#buffer})); then
                     buffer="${buffer:0:cursor_pos}${buffer:cursor_pos+1}"
@@ -913,6 +971,7 @@ app::read_input() {
                 local esc='' final='' params='' mod=''
                 if ! IFS= read -rsn1 -t "$ESC_DELAY" byte; then
                     # 超时且无后继字节 → 裸 Escape，返回上层
+                    app::clear_input_region
                     _ariwh_out=''
                     return 0
                 fi
@@ -989,10 +1048,44 @@ app::read_input() {
                 ;;
         esac
 
+        # 求 hint：以 buffer 首词为 key 查找。首词未变则沿用上次的折行结果
+        out::split_args "$buffer" parts
+        key="${parts[0]:-}"
+        if [[ $key != "$hint_key" ]]; then
+            hint_key="$key" hint='' hint_rows=()
+            if [[ -n $key ]]; then
+                for child in "${_ariwh_children[@]}"; do
+                    if [[ $child != '('*')' && $child == "$key" ]]; then
+                        hint_func="menu::${parent}::${key}::hint"
+                        declare -F "$hint_func" > /dev/null 2>&1 || hint_func="menu::_::${key}::hint"
+                        # 丢弃 stdout：hint 应经 nameref 写回，误写标准输出者不得污染屏幕
+                        "$hint_func" hint > /dev/null 2>&1 || true
+                        break
+                    fi
+                done
+            fi
+            # 缩进 2 列，末列留空以避开终端的延迟折行
+            [[ -n $hint ]] && out::wrap_width "$hint" "$((cols - 3))" hint_rows
+        fi
+
+        # 扩容必须早于 \e[s：触底时 \n 会滚屏，而 DECSC 存的是绝对位置
+        local want="${#hint_rows[@]}" i
+        if ((want > reserved)); then
+            printf '\r'
+            for ((i = reserved; i < want; i++)); do printf '\n'; done
+            printf '\e[%sA' "$((want - reserved))"
+            reserved=$want
+        fi
+
         out::viewport "$buffer" "$cursor_pos" "$((cols - 1))" vp_head vp_tail
         printf '\r\e[K%s' "$vp_head"
         printf '\e[s'
         printf '%s' "$vp_tail"
+        # 只用相对移动，绝不输出 \n：hint 区因此永远不可能长出预留之外
+        for ((i = 0; i < reserved; i++)); do
+            printf '\e[B\r\e[K'
+            ((i < want)) && printf '  %s%s%s' "${_faint}" "${hint_rows[i]}" "${_off}"
+        done
         printf '\e[u'
     done
 } < /dev/tty
@@ -1059,7 +1152,7 @@ app::loop_menu() {
         printf '%s' "${_refresh}${buf}"
 
         local choice=''
-        app::read_input choice hist || {
+        app::read_input_with_hint "$parent" children_arr choice hist || {
             printf '\n'
             return
         }
@@ -1088,7 +1181,6 @@ app::loop_menu() {
                 declare -F "$action_func" > /dev/null 2>&1 || break
                 matched=1
                 MENU_QUICK=0
-                printf '\r\e[K'
                 "$action_func" "$@"
                 local _rc=$?
                 ((MENU_QUICK)) || {
