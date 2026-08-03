@@ -220,10 +220,7 @@ out::fzf_tsv_pick() {
     local _list
     out::fetch_cached _list "$path_cache_res_lists_dir/$1" "$URL_res_lists_prefix/$1" || return 1
     local _chosen=$(printf '%s\n' "$_list" | fzf --prompt="$(i18n::printf "$2" "$3")" --with-nth=1 --delimiter='\t' | cut -f2)
-    [[ -n $_chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
+    [[ -n $_chosen ]] || return 1
     printf '%s\n' "$_chosen"
 }
 
@@ -237,10 +234,7 @@ out::fzf_dir_pick() {
         return 1
     }
     local _chosen=$(printf '%s\n' "$_list" | fzf --prompt="$(i18n::printf "$2" "$3")")
-    [[ -n $_chosen ]] || {
-        MENU_QUICK=1
-        return 1
-    }
+    [[ -n $_chosen ]] || return 1
     printf '%s\n' "$_chosen"
 }
 
@@ -449,13 +443,19 @@ menu::f::2() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-BoldIt
 menu::f::2::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font Bold Italic${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font Bold Italic${_off}"; }
 menu::f::f() {
     local chosen
-    chosen=$(out::fzf_tsv_pick font_list.tsv "搜索字体 > " "Search fonts > ") || return 1
+    chosen=$(out::fzf_tsv_pick font_list.tsv "搜索字体 > " "Search fonts > ") || {
+        MENU_QUICK=1
+        return 1
+    }
     do::termux_apply_resource "$chosen" fonts "$URL_font_prefix" "$path_termux_font_ttf"
 }
 menu::f::f::title() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 探索 Nerd Font 字体${_faint}（ryanoasis/nerd-fonts）${_off}" "${_cat2}${_memu_hl} Discover Nerd Fonts${_faint} (ryanoasis/nerd-fonts)${_off}"; }
 menu::f::ff() {
     local chosen
-    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/fonts" "搜索已缓存字体 > " "Search cached fonts > ") || return 1
+    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/fonts" "搜索已缓存字体 > " "Search cached fonts > ") || {
+        MENU_QUICK=1
+        return 1
+    }
     do::termux_apply_resource "$chosen" fonts "$URL_font_prefix" "$path_termux_font_ttf"
 }
 menu::f::ff::title() { i18n::printf -v "$1" "${_cat2} 浏览已缓存的字体${_faint}（~/.termux/cache）${_off}" "${_cat2} Browse cached fonts${_faint} (~/.termux/cache)${_off}"; }
@@ -470,13 +470,19 @@ menu::t::2() { do::termux_apply_resource "Gruvbox Dark.properties" themes "$URL_
 menu::t::2::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Gruvbox Dark 主题${_off}" "${_cat3} Quick-apply Gruvbox Dark${_off}"; }
 menu::t::t() {
     local chosen
-    chosen=$(out::fzf_tsv_pick theme_list.tsv "搜索主题 > " "Search themes > ") || return 1
+    chosen=$(out::fzf_tsv_pick theme_list.tsv "搜索主题 > " "Search themes > ") || {
+        MENU_QUICK=1
+        return 1
+    }
     do::termux_apply_resource "$chosen" themes "$URL_theme_prefix" "$path_termux_colors_properties"
 }
 menu::t::t::title() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 探索颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}${_memu_hl} Discover color themes${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 menu::t::tt() {
     local chosen
-    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/themes" "搜索已缓存主题 > " "Search cached themes > ") || return 1
+    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/themes" "搜索已缓存主题 > " "Search cached themes > ") || {
+        MENU_QUICK=1
+        return 1
+    }
     do::termux_apply_resource "$chosen" themes "$URL_theme_prefix" "$path_termux_colors_properties"
 }
 menu::t::tt::title() { i18n::printf -v "$1" "${_cat3} 浏览已缓存的主题${_faint}（~/.termux/cache）${_off}" "${_cat3} Browse cached themes${_faint} (~/.termux/cache)${_off}"; }
@@ -489,13 +495,19 @@ menu::k::1() { do::termux_apply_resource "Enhanced.properties" keymaps "$URL_key
 menu::k::1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
 menu::k::k() {
     local chosen
-    chosen=$(out::fzf_tsv_pick keymap_list.tsv "搜索按键布局 > " "Search keymaps > ") || return 1
+    chosen=$(out::fzf_tsv_pick keymap_list.tsv "搜索按键布局 > " "Search keymaps > ") || {
+        MENU_QUICK=1
+        return 1
+    }
     do::termux_apply_resource "$chosen" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"
 }
 menu::k::k::title() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 探索按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}${_memu_hl}󰌓 Discover keymaps${_faint} (miniyu157/Hello-Termux)${_off}"; }
 menu::k::kk() {
     local chosen
-    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/keymaps" "搜索已缓存按键布局 > " "Search cached keymaps > ") || return 1
+    chosen=$(out::fzf_dir_pick "$path_termux_res_cache_dir/keymaps" "搜索已缓存按键布局 > " "Search cached keymaps > ") || {
+        MENU_QUICK=1
+        return 1
+    }
     do::termux_apply_resource "$chosen" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"
 }
 menu::k::kk::title() { i18n::printf -v "$1" "${_cat4} 浏览已缓存的按键布局${_faint}（~/.termux/cache）${_off}" "${_cat4} Browse cached keymaps${_faint} (~/.termux/cache)${_off}"; }
