@@ -709,9 +709,11 @@ menu::root::q::title() { i18n::printf -v "$1" "󰩈 退出程序" "󰩈 Exit"; }
 
 app::set_lang() {
     [[ -n ${APP_LANG} ]] && return
-    local android_locale="$(getprop persist.sys.locale 2> /dev/null)"
 
-    if [[ $android_locale == zh-* ]] || [[ ${LANG:-} == zh_* ]]; then
+    local locale
+    locale=$(getprop persist.sys.locale 2> /dev/null)
+    [[ -n $locale ]] || locale=$(getprop ro.product.locale 2> /dev/null)
+    if [[ $locale == zh-* ]] || [[ ${LANG:-} == zh_* ]]; then
         APP_LANG="zh"
     else
         APP_LANG="en"
