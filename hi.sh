@@ -65,7 +65,11 @@ app::set_paths() {
 do::set_deps() {
     local missing=()
     for dep in "$@"; do
-        command -v "$dep" > /dev/null 2>&1 || missing+=("$dep")
+        if [[ $dep == *:* ]]; then
+            command -v "${dep%%:*}" > /dev/null 2>&1 || missing+=("${dep##*:}")
+        else
+            command -v "$dep" > /dev/null 2>&1 || missing+=("$dep")
+        fi
     done
     ((${#missing[@]})) || return 0
     if [[ -n ${PREFIX:-} ]]; then
@@ -598,7 +602,7 @@ ${_faint}包含 Lazyvim 的实用配置，其中 1-6 菜单为配置文件写入
     "${_vimcolor}${_memu_hl} Configure Neovim + Lazyvim${_off}
 ${_faint}Practical configs for Lazyvim, items 1-6 write config files${_off}"; }
 
-menu::vi::i() { do::set_deps neovim; }
+menu::vi::i() { do::set_deps nvim:neovim; }
 menu::vi::i::title() {
     local _status=''
     out::command_status nvim _status
