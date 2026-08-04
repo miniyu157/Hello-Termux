@@ -548,7 +548,7 @@ menu::sh() { i18n::printf -v "$1" \
 ${_faint}将显示 diff 更改供审阅，自动备份旧配置${_off}" \
     "${_purple}${_memu_hl} More Shell utilities${_off}
 ${_faint}Shows diff before applying, auto-backs up old config${_off}"; }
-menu::sh::eza() {
+menu::sh::1() {
     do::set_deps eza || return 1
 
     local shell content config scan_target
@@ -562,8 +562,8 @@ menu::sh::eza() {
     void::warn_existing_config "$scan_target" 'alias.*eza'
     do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
 }
-menu::sh::eza::title() { i18n::printf -v "$1" "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
-menu::sh::zox() {
+menu::sh::1::title() { i18n::printf -v "$1" "${_purple}安装 eza，并为 bash/fish 配置实用别名${_off}" "${_purple}Install eza and configure aliases for bash/fish${_off}"; }
+menu::sh::2() {
     do::set_deps zoxide || return 1
 
     local shell content config scan_target
@@ -577,8 +577,8 @@ menu::sh::zox() {
     void::warn_existing_config "$scan_target" 'zoxide init'
     do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
 }
-menu::sh::zox::title() { i18n::printf -v "$1" "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
-menu::sh::atu() {
+menu::sh::2::title() { i18n::printf -v "$1" "${_purple}安装 zoxide，并为 bash/fish 配置 hook${_off}" "${_purple}Install zoxide and configure hook for bash/fish${_off}"; }
+menu::sh::3() {
     do::set_deps atuin || return 1
 
     local shell content config scan_target
@@ -592,7 +592,34 @@ menu::sh::atu() {
     void::warn_existing_config "$scan_target" 'atuin init'
     do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
 }
-menu::sh::atu::title() { i18n::printf -v "$1" "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
+menu::sh::3::title() { i18n::printf -v "$1" "${_purple}安装 atuin，并为 bash/fish 配置 hook${_off}" "${_purple}Install atuin and configure hook for bash/fish${_off}"; }
+menu::sh::4() {
+    do::set_deps bat || return 1
+
+    local shell content config scan_target
+    shell=$(out::choose_shell bat bash fish) || return 1
+    out::fetch_cached content "${path_cache_config_cells_dir}/shell/bat_alias.${shell}" "${URL_config_cells_prefix}shell/bat_alias.${shell}" || return 1
+    case "$shell" in
+        bash) config="$HOME/.bashrc" scan_target="$HOME/.bashrc" ;;
+        fish) config="$HOME/.config/fish/conf.d/bat_alias.fish" scan_target="$HOME/.config/fish/" ;;
+    esac
+
+    void::warn_existing_config "$scan_target" 'alias.*cat.*bat'
+    do::write_user_config "$config" "$content" && i18n_msg::shell_changed "$shell"
+}
+menu::sh::4::title() { i18n::printf -v "$1" "${_purple}安装 bat，并为 bash/fish 配置实用别名${_off}" "${_purple}Install bat and configure aliases for bash/fish${_off}"; }
+menu::sh::5() { do::set_deps rg:ripgrep; }
+menu::sh::5::title() {
+    local _s=''
+    out::command_status rg _s
+    i18n::printf -v "$1" "${_purple}安装更好的 grep — ripgrep${_faint}（%s）${_off}" "${_purple}Install a better grep — ripgrep${_faint} (%s)${_off}" "$_s"
+}
+menu::sh::6() { do::set_deps fd; }
+menu::sh::6::title() {
+    local _s=''
+    out::command_status fd _s
+    i18n::printf -v "$1" "${_purple}安装更好的 find — fd${_faint}（%s）${_off}" "${_purple}Install a better find — fd${_faint} (%s)${_off}" "$_s"
+}
 
 # ---- Neovim + Lazyvim ----
 
@@ -1253,7 +1280,7 @@ app::loop_menu '(root
       (vi            ; Neovim + Lazyvim
         i  ii  1  2  3  4  5  6)
       (sh            ; Shell extras (eza/zoxide/atuin)
-        eza  zox  atu)
+        1  2  3  4  5  6)
       s  l  i        ; Switch server / Lang / Install
       cl  is  gh     ; Clear cache / Issues / Repo
       q              ; Exit
