@@ -1188,7 +1188,7 @@ app::loop_menu() {
                     ((_rc)) && _p="${_cat1}×"
                     i18n::printf "${_p}${_off} 工具运行结束，退出码: %s\n" "${_p}${_off} Tool finished, exit code: %s\n" "$_rc"
                     i18n::printf "  按回车键继续..." "  Press Enter to continue..."
-                    read -r _ < /dev/tty
+                    read -rs _ < /dev/tty
                 }
                 break
             fi
