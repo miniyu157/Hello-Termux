@@ -437,6 +437,7 @@ menu::root::u() {
     pkg update -y && apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
 }
 menu::root::u::title() { i18n::printf -v "$1" "${_cat1}󰏕 更新和升级软件包${_off}" "${_cat1}󰏕 Update and upgrade packages${_off}"; }
+menu::root::u::hint() { i18n::printf -v "$1" "更新软件包索引并升级全部已安装包。\n仅 Termux 环境可用。" "Update package index and upgrade all installed packages.\nTermux environment only."; }
 
 # ---- 字体菜单 ----
 menu::f() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 浏览/探索/更改字体${_off}" "${_cat2}${_memu_hl} Browse / discover / change fonts${_off}"; }
@@ -916,15 +917,16 @@ app::clear_input_region() { printf '\r\e[J'; }
 # $2 = children 数组名 (nameref)
 # $3 = 输出变量名 (nameref)
 # $4 = 历史数组名 (nameref)，由调用层持有，↑↓ 在其中浏览
+# $5 = 菜单帧变量名 (nameref)，hint 缩行时用它重刷整帧
 # 返回 0 且输出非空 = 用户选择；0 且空 = Escape 返回上层；1 = EOF（输入流关闭）
 app::read_input_with_hint() {
     local parent="$1"
-    local -n _ariwh_children="$2" _ariwh_out="$3" _ariwh_hist="$4"
+    local -n _ariwh_children="$2" _ariwh_out="$3" _ariwh_hist="$4" _ariwh_frame="$5"
     local buffer='' byte='' hint='' cursor_pos=0
     local vp_head='' vp_tail=''
     local -a parts=() hint_rows=()
     local key='' child hint_func
-    # 已向下方预留的行数。按需增长，不回收：hint 变短时多余的行清空留白即可
+    # 已向下方预留的行数。扩容靠 \n，缩行靠重刷整帧后归零重撑
     local reserved=0
     # 上次求过 hint 的首词。hint 只依赖首词，故逐键击键无须重复查找与折行
     local hint_key=''
@@ -1068,8 +1070,15 @@ app::read_input_with_hint() {
             [[ -n $hint ]] && out::wrap_width "$hint" "$((cols - 3))" hint_rows
         fi
 
-        # 扩容必须早于 \e[s：触底时 \n 会滚屏，而 DECSC 存的是绝对位置
+        # hint 缩行时重刷整帧：扩容用的 \n 可能已滚屏，局部删行无法把菜单拉回屏内。
+        # 重刷后光标回到输入行行首，预留归零，下面的扩容分支据此重新撑开
         local want="${#hint_rows[@]}" i
+        if ((want < reserved)); then
+            printf '%s' "${_refresh}${_ariwh_frame}"
+            reserved=0
+        fi
+
+        # 扩容必须早于 \e[s：触底时 \n 会滚屏，而 DECSC 存的是绝对位置
         if ((want > reserved)); then
             printf '\r'
             for ((i = reserved; i < want; i++)); do printf '\n'; done
@@ -1152,7 +1161,7 @@ app::loop_menu() {
         printf '%s' "${_refresh}${buf}"
 
         local choice=''
-        app::read_input_with_hint "$parent" children_arr choice hist || {
+        app::read_input_with_hint "$parent" children_arr choice hist buf || {
             printf '\n'
             return
         }
