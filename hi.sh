@@ -932,10 +932,8 @@ app::read_input_with_hint() {
     local hint_key=''
     # 历史游标：等于历史长度表示"停在当前行"，此时 stash 无意义
     local hist_idx="${#_ariwh_hist[@]}" hist_stash=''
-    # 终端宽度只在进入时取一次：逐键 fork tput 在 Android 上过慢。
-    # 代价是输入途中改变窗口尺寸不会即时生效，回车重进本层后恢复准确
-    local cols="$(tput cols 2> /dev/null)"
-    [[ -n $cols && -z ${cols//[0-9]/} ]] && ((cols > 20)) || cols=80
+    local cols=${COLUMNS:-80}
+    [[ $cols =~ ^[0-9]+$ ]] && ((cols > 20)) || cols=80
 
     while true; do
         IFS= read -rsn1 byte || { # 输入流关闭 → 上抛，避免空串被当成"返回上层"
@@ -1126,9 +1124,15 @@ app::loop_menu() {
         "menu::${parent}" header_text 2> /dev/null || true
         [[ -z $header_text ]] && first_line="$parent" || first_line="${header_text%%$'\n'*}"
         [[ $header_text == *$'\n'* ]] && rest_lines="${header_text#*$'\n'}"
+
+        local _cols=${COLUMNS:-80} _sep
+        [[ $_cols =~ ^[0-9]+$ ]] && ((_cols > 20)) || _cols=80
+        printf -v _sep '%*s' "$_cols" ''
+        _sep="${_sep// /─}"
+
         buf+="${_b}  ✦ ${first_line} ✦ ${_off}"$'\n'
         [[ -n ${rest_lines:-} ]] && buf+='    '${rest_lines//$'\n'/$'\n'    }$'\n'
-        buf+="─────────────────────────────────────────────────"$'\n'
+        buf+="$_sep"$'\n'
 
         # 渲染子节点
         local child _in='' _gt='' _lt=''
@@ -1150,7 +1154,7 @@ app::loop_menu() {
         done
 
         # Footer
-        buf+="${_faint}─────────────────────────────────────────────────${_off}"$'\n'
+        buf+="${_faint}${_sep}${_off}"$'\n'
         if [[ $parent == "$root_name" ]]; then
             i18n::printf -v _line "${_uline}键入需要的工具回车运行:${_off}\n" "${_uline}Type a key and press Enter to run:${_off}\n"
         else
