@@ -439,7 +439,7 @@ menu::root::u::hint() { i18n::printf -v "$1" "更新软件包索引并升级全�
 
 # ---- 字体菜单 ----
 menu::f() { i18n::printf -v "$1" "${_cat2}${_memu_hl} 浏览/探索/更改字体${_off}" "${_cat2}${_memu_hl} Browse / discover / change fonts${_off}"; }
-menu::f::b() { void::open_url "https://www.programmingfonts.org/#oxproto"; }
+menu::f::b() { void::open_url "https://www.programmingfonts.org/#oxproto" && MENU_QUICK=1; }
 menu::f::b::title() { i18n::printf -v "$1" "${_cat2}󰆋 在浏览器预览字体效果${_faint}（programmingfonts.org）${_off}" "${_cat2}󰆋 Preview fonts in browser${_faint} (programmingfonts.org)${_off}"; }
 menu::f::1() { do::termux_apply_resource "IosevkaTerm/IosevkaTermNerdFont-Regular.ttf" fonts "$URL_font_prefix" "$path_termux_font_ttf"; }
 menu::f::1::title() { i18n::printf -v "$1" "${_cat2} 快捷安装 IosevkaTerm Nerd Font${_off}" "${_cat2} Quick-install IosevkaTerm Nerd Font${_off}"; }
@@ -466,7 +466,7 @@ menu::f::ff::title() { i18n::printf -v "$1" "${_cat2} 浏览已缓存的字�
 
 # ----颜色主题菜单 ----
 menu::t() { i18n::printf -v "$1" "${_cat3}${_memu_hl} 浏览/探索/更改颜色主题${_off}" "${_cat3}${_memu_hl} Browse / discover / change color themes${_off}"; }
-menu::t::b() { void::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes"; }
+menu::t::b() { void::open_url "https://github.com/mbadolato/iTerm2-Color-Schemes" && MENU_QUICK=1; }
 menu::t::b::title() { i18n::printf -v "$1" "${_cat3}󰆋 在浏览器预览颜色主题${_faint}（mbadolato/iTerm2-Color-Schemes）${_off}" "${_cat3}󰆋 Preview color themes in browser${_faint} (mbadolato/iTerm2-Color-Schemes)${_off}"; }
 menu::t::1() { do::termux_apply_resource "Dracula+.properties" themes "$URL_theme_prefix" "$path_termux_colors_properties"; }
 menu::t::1::title() { i18n::printf -v "$1" "${_cat3} 快捷应用 Dracula+ 主题${_off}" "${_cat3} Quick-apply Dracula+${_off}"; }
@@ -493,7 +493,7 @@ menu::t::tt::title() { i18n::printf -v "$1" "${_cat3} 浏览已缓存的主�
 
 # ---- 按键布局菜单 ----
 menu::k() { i18n::printf -v "$1" "${_cat4}${_memu_hl}󰌓 浏览/探索/更改按键布局${_off}" "${_cat4}${_memu_hl}󰌓 Browse / discover / change keymaps${_off}"; }
-menu::k::b() { void::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::k::b() { void::open_url "https://github.com/miniyu157/hello-termux" && MENU_QUICK=1; }
 menu::k::b::title() { i18n::printf -v "$1" "${_cat4}󰆋 在浏览器预览按键布局${_faint}（miniyu157/Hello-Termux）${_off}" "${_cat4}󰆋 Preview keymaps in browser${_faint} (miniyu157/Hello-Termux)${_off}"; }
 menu::k::1() { do::termux_apply_resource "Enhanced.properties" keymaps "$URL_keymap_prefix" "$path_termux_key_properties"; }
 menu::k::1::title() { i18n::printf -v "$1" "${_cat4} 快捷应用实用按键布局${_off}" "${_cat4} Quick-apply enhanced key bindings${_off}"; }
@@ -696,10 +696,10 @@ menu::root::l::title() { i18n::printf -v "$1" " 切换语言${_faint}（目�
 menu::root::cl() { rm -rf "$path_cache_dir" && mkdir -p "$path_cache_dir" && i18n::printf "清理: %s\n" "Cleared: %s\n" "$path_cache_dir"; }
 menu::root::cl::title() { i18n::printf -v "$1" " 清除缓存目录${_faint}（~/.cache/hello-termux）${_off}" " Clear cache directory${_faint} (~/.cache/hello-termux)${_off}"; }
 
-menu::root::is() { void::open_url "https://github.com/miniyu157/hello-termux/issues"; }
+menu::root::is() { void::open_url "https://github.com/miniyu157/hello-termux/issues" && MENU_QUICK=1; }
 menu::root::is::title() { i18n::printf -v "$1" "󰭻 前往 Issues 页面" "󰭻 Go to Issues page"; }
 
-menu::root::gh() { void::open_url "https://github.com/miniyu157/hello-termux"; }
+menu::root::gh() { void::open_url "https://github.com/miniyu157/hello-termux" && MENU_QUICK=1; }
 menu::root::gh::title() { i18n::printf -v "$1" "󰊤 前往源代码仓库" "󰊤 Go to source repository"; }
 
 menu::root::q() { exit 0; }
